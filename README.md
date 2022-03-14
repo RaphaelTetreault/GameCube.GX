@@ -1,2 +1,2 @@
-# GameCube.GX
-A C# library for reading and writing default GameCube Graphics (GX) formats.
+# GameCube.Core
+A C# library for reading and writing generic GameCube formats.
