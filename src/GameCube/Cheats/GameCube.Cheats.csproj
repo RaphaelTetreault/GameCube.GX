@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Manifold.IO\Manifold.IO.csproj" />
-    <ProjectReference Include="..\Manifold\Manifold.csproj" />
+    <ProjectReference Include="..\..\..\..\Manifold.Core\src\Manifold\Manifold.csproj" />
+    <ProjectReference Include="..\..\..\..\Manifold.Core\src\Manifold\Manifold.IO\Manifold.IO.csproj" />
   </ItemGroup>
 
 </Project>
