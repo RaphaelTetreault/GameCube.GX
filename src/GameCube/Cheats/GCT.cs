@@ -6,7 +6,8 @@ using System.IO;
 namespace GameCube.Cheats
 {
     public sealed class GCT :
-        IBinarySerializable
+        IBinarySerializable,
+        IBinaryFileType
     {
         public const ulong magic = 0x00D0C0DE_00D0C0DE;
         public const ulong fileTerminator = 0xF0000000_00000000;
@@ -14,10 +15,14 @@ namespace GameCube.Cheats
         public string gameCode;
         public GctCode[] codes;
 
+
+        public Endianness Endianness => Endianness.BigEndian;
+        public string FileExtension => throw new NotImplementedException();
+        public string FileName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+
         public void Deserialize(BinaryReader reader)
         {
-            BinaryIoUtility.PushEndianness(Endianness.BigEndian);
-
             var fileSize = (int)(reader.BaseStream.Length / 4);
             var isValidFile = (fileSize % 8) == 0;
 
@@ -43,17 +48,11 @@ namespace GameCube.Cheats
                 codes.Add(code);
             }
             this.codes = codes.ToArray();
-
-            BinaryIoUtility.PopEndianness();
         }
 
         public void Serialize(BinaryWriter writer)
         {
-            BinaryIoUtility.PushEndianness(Endianness.BigEndian);
-            {
-                writer.WriteX(codes);
-            }
-            BinaryIoUtility.PopEndianness();
+            writer.WriteX(codes);
         }
 
     }
