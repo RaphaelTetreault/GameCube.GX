@@ -1,5 +1,4 @@
-﻿using Manifold;
-using System;
+﻿using Manifold.IO;
 
 namespace GameCube.GX
 {
