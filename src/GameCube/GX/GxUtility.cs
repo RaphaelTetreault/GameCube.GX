@@ -9,7 +9,7 @@ namespace GameCube.GX
     {
         public const int GX_FIFO_ALIGN = 32;
 
-        public static float3 ReadPos(BinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static float3 ReadPos(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_POS_XYZ)
             {
@@ -30,7 +30,7 @@ namespace GameCube.GX
                 throw new NotImplementedException();
             }
         }
-        public static float3 ReadNormal(BinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static float3 ReadNormal(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             // For NBT, the caller of this function should call it 3 times, each for N, B, and T
             if (nElements == ComponentCount.GX_NRM_XYZ || nElements == ComponentCount.GX_NRM_NBT)
@@ -45,7 +45,7 @@ namespace GameCube.GX
                 throw new NotImplementedException();
             }
         }
-        public static float2 ReadUV(BinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static float2 ReadUV(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_TEX_ST)
             {
@@ -64,24 +64,24 @@ namespace GameCube.GX
                 throw new NotImplementedException();
             }
         }
-        public static float ReadNumber(BinaryReader reader, ComponentType type, int nFracBits)
+        public static float ReadNumber(EndianBinaryReader reader, ComponentType type, int nFracBits)
         {
             switch (type)
             {
                 case ComponentType.GX_F32:
-                    return BinaryIoUtility.ReadFloat(reader);
+                    return reader.ReadFloat();
 
                 case ComponentType.GX_S8:
-                    return FixedS8ToFloat(BinaryIoUtility.ReadInt8(reader), nFracBits);
+                    return FixedS8ToFloat(reader.ReadInt8(), nFracBits);
 
                 case ComponentType.GX_U8:
-                    return FixedU8ToFloat(BinaryIoUtility.ReadUInt8(reader), nFracBits);
+                    return FixedU8ToFloat(reader.ReadUInt8(), nFracBits);
 
                 case ComponentType.GX_S16:
-                    return FixedS16ToFloat(BinaryIoUtility.ReadInt16(reader), nFracBits);
+                    return FixedS16ToFloat(reader.ReadInt16(), nFracBits);
 
                 case ComponentType.GX_U16:
-                    return FixedU16ToFloat(BinaryIoUtility.ReadUInt16(reader), nFracBits);
+                    return FixedU16ToFloat(reader.ReadUInt16(), nFracBits);
 
                 default:
                     throw new NotImplementedException();
@@ -107,7 +107,7 @@ namespace GameCube.GX
 
 
 
-        public static void WritePosition(BinaryWriter writer, float3 position, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WritePosition(EndianBinaryWriter writer, float3 position, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_POS_XYZ)
             {
@@ -125,7 +125,7 @@ namespace GameCube.GX
                 throw new ArgumentException();
             }
         }
-        public static void WriteNormal(BinaryWriter writer, float3 normal, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WriteNormal(EndianBinaryWriter writer, float3 normal, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             // For NBT, the caller of this function should call it 3 times, each for N, B, and T
             if (nElements == ComponentCount.GX_NRM_XYZ || nElements == ComponentCount.GX_NRM_NBT)
@@ -139,7 +139,7 @@ namespace GameCube.GX
                 throw new ArgumentException();
             }
         }
-        public static void WriteUV(BinaryWriter writer, float2 textureUV, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WriteUV(EndianBinaryWriter writer, float2 textureUV, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_TEX_ST)
             {
@@ -155,15 +155,15 @@ namespace GameCube.GX
                 throw new ArgumentException();
             }
         }
-        public static void WriteNumber(BinaryWriter writer, float value, ComponentType componentType, int nFracs)
+        public static void WriteNumber(EndianBinaryWriter writer, float value, ComponentType componentType, int nFracs)
         {
             switch (componentType)
             {
-                case ComponentType.GX_F32: writer.WriteX(value); return;
-                case ComponentType.GX_S16: writer.WriteX(FloatToFixedS16(value, nFracs)); return;
-                case ComponentType.GX_U16: writer.WriteX(FloatToFixedU16(value, nFracs)); return;
-                case ComponentType.GX_S8: writer.WriteX(FloatToFixedS8(value, nFracs)); return;
-                case ComponentType.GX_U8: writer.WriteX(FloatToFixedU8(value, nFracs)); return;
+                case ComponentType.GX_F32: writer.Write(value); return;
+                case ComponentType.GX_S16: writer.Write(FloatToFixedS16(value, nFracs)); return;
+                case ComponentType.GX_U16: writer.Write(FloatToFixedU16(value, nFracs)); return;
+                case ComponentType.GX_S8: writer.Write(FloatToFixedS8(value, nFracs)); return;
+                case ComponentType.GX_U8: writer.Write(FloatToFixedU8(value, nFracs)); return;
 
                 default:
                     throw new ArgumentException();

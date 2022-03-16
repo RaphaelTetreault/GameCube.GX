@@ -34,15 +34,15 @@ namespace GameCube.GX
 
 
         // METHODS
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(EndianBinaryReader reader)
         {
-            reader.ReadX(ref command);
+            reader.Read(ref command);
             UpdateBitFields();
         }
 
-        public void Serialize(BinaryWriter writer)
+        public void Serialize(EndianBinaryWriter writer)
         {
-            writer.WriteX(command);
+            writer.Write(command);
         }
 
         private void UpdateBitFields()

@@ -21,7 +21,7 @@ namespace GameCube.Cheats
         public string FileName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(EndianBinaryReader reader)
         {
             var fileSize = (int)(reader.BaseStream.Length / 4);
             var isValidFile = (fileSize % 8) == 0;
@@ -29,7 +29,7 @@ namespace GameCube.Cheats
             if (!isValidFile)
                 throw new FileLoadException($"Not a valid GCT file (size not multiple of 8)");
 
-            var header = reader.ReadX_UInt64();
+            var header = reader.ReadUInt64();
             if (header != magic)
                 throw new FileLoadException($"Not a valid GCT file (header is not {magic:x16})");
 
@@ -44,15 +44,15 @@ namespace GameCube.Cheats
 
                 // Instance code, deserialize, add to list of codes
                 var code = new GctCode();
-                reader.ReadX(ref code);
+                reader.Read(ref code);
                 codes.Add(code);
             }
             this.codes = codes.ToArray();
         }
 
-        public void Serialize(BinaryWriter writer)
+        public void Serialize(EndianBinaryWriter writer)
         {
-            writer.WriteX(codes);
+            writer.Write(codes);
         }
 
     }

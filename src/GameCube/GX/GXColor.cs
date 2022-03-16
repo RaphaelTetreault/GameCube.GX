@@ -56,7 +56,7 @@ namespace GameCube.GX
             componentType = ComponentType.GX_RGBA8;
         }
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(EndianBinaryReader reader)
         {
             switch (componentType)
             {
@@ -72,7 +72,7 @@ namespace GameCube.GX
             }
         }
 
-        public void Serialize(BinaryWriter writer)
+        public void Serialize(EndianBinaryWriter writer)
         {
             switch (componentType)
             {
@@ -89,33 +89,33 @@ namespace GameCube.GX
         }
 
 
-        private void ReadRGBA565(BinaryReader reader)
+        private void ReadRGBA565(EndianBinaryReader reader)
         {
             // Left >> & = mask bits you want, right << to make bits max at 255
-            var rgb565 = BinaryIoUtility.ReadUInt16(reader);
+            var rgb565 = reader.ReadUInt16();
             r = (byte)(((rgb565 >> 11) & (0b_0001_1111)) * (1 << 3));
             g = (byte)(((rgb565 >> 05) & (0b_0011_1111)) * (1 << 2));
             b = (byte)(((rgb565 >> 00) & (0b_0001_1111)) * (1 << 3));
         }
-        private void ReadRGB8(BinaryReader reader)
+        private void ReadRGB8(EndianBinaryReader reader)
         {
-            r = BinaryIoUtility.ReadUInt8(reader);
-            g = BinaryIoUtility.ReadUInt8(reader);
-            b = BinaryIoUtility.ReadUInt8(reader);
+            r = reader.ReadUInt8();
+            g = reader.ReadUInt8();
+            b = reader.ReadUInt8();
         }
-        private void ReadRGBA4(BinaryReader reader)
+        private void ReadRGBA4(EndianBinaryReader reader)
         {
-            var rgba4 = BinaryIoUtility.ReadUInt16(reader);
+            var rgba4 = reader.ReadUInt16();
             r = (byte)(((rgba4 >> 12) & (0b_0000_1111)) * (1 << 4));
             g = (byte)(((rgba4 >> 08) & (0b_0000_1111)) * (1 << 4));
             b = (byte)(((rgba4 >> 04) & (0b_0000_1111)) * (1 << 4));
             a = (byte)(((rgba4 >> 00) & (0b_0000_1111)) * (1 << 4));
         }
-        private void ReadRGBA6(BinaryReader reader)
+        private void ReadRGBA6(EndianBinaryReader reader)
         {
             // Reconstruct the 24bit color as uint32
-            var upper16 = BinaryIoUtility.ReadUInt16(reader);
-            var lower8 = BinaryIoUtility.ReadUInt8(reader);
+            var upper16 = reader.ReadUInt16();
+            var lower8 = reader.ReadUInt8();
             var rgba6 = (uint)(upper16 << 8) | (lower8);
 
             r = (byte)(((rgba6 >> 18) & (0b_0011_1111)) * (1 << 2));
@@ -123,46 +123,46 @@ namespace GameCube.GX
             b = (byte)(((rgba6 >> 06) & (0b_0011_1111)) * (1 << 2));
             a = (byte)(((rgba6 >> 00) & (0b_0011_1111)) * (1 << 2));
         }
-        private void ReadRGBA8(BinaryReader reader)
+        private void ReadRGBA8(EndianBinaryReader reader)
         {
-            r = BinaryIoUtility.ReadUInt8(reader);
-            g = BinaryIoUtility.ReadUInt8(reader);
-            b = BinaryIoUtility.ReadUInt8(reader);
-            a = BinaryIoUtility.ReadUInt8(reader);
+            r = reader.ReadUInt8();
+            g = reader.ReadUInt8();
+            b = reader.ReadUInt8();
+            a = reader.ReadUInt8();
         }
-        private void ReadRGBX8(BinaryReader reader)
+        private void ReadRGBX8(EndianBinaryReader reader)
         {
-            r = BinaryIoUtility.ReadUInt8(reader);
-            g = BinaryIoUtility.ReadUInt8(reader);
-            b = BinaryIoUtility.ReadUInt8(reader);
-            var _ = BinaryIoUtility.ReadUInt8(reader); // discarded
+            r = reader.ReadUInt8();
+            g = reader.ReadUInt8();
+            b = reader.ReadUInt8();
+            var _ = reader.ReadUInt8(); // discarded
         }
 
 
-        private void WriteRGBA565(BinaryWriter writer)
+        private void WriteRGBA565(EndianBinaryWriter writer)
         {
             byte r5 = (byte)((r >> 3) & 0b_0001_1111);
             byte g6 = (byte)((g >> 2) & 0b_0011_1111);
             byte b5 = (byte)((b >> 3) & 0b_0001_1111);
             ushort rgb565 = (ushort)(r5 << 11 + g6 << 05 + b5 << 00);
-            writer.WriteX(rgb565);
+            writer.Write(rgb565);
         }
-        private void WriteRGB8(BinaryWriter writer)
+        private void WriteRGB8(EndianBinaryWriter writer)
         {
-            writer.WriteX(r);
-            writer.WriteX(g);
-            writer.WriteX(b);
+            writer.Write(r);
+            writer.Write(g);
+            writer.Write(b);
         }
-        private void WriteRGBA4(BinaryWriter writer)
+        private void WriteRGBA4(EndianBinaryWriter writer)
         {
             byte r4 = (byte)((r >> 4) & 0b_0000_1111);
             byte g4 = (byte)((g >> 4) & 0b_0000_1111);
             byte b4 = (byte)((b >> 4) & 0b_0000_1111);
             byte a4 = (byte)((a >> 4) & 0b_0000_1111);
             ushort rgba4 = (ushort)(r4 << 12 + g4 << 08 + b4 << 04 + a4 << 00);
-            writer.WriteX(rgba4);
+            writer.Write(rgba4);
         }
-        private void WriteRGBA6(BinaryWriter writer)
+        private void WriteRGBA6(EndianBinaryWriter writer)
         {
             byte r6 = (byte)((r >> 6) & 0b_0011_1111);
             byte g6 = (byte)((g >> 6) & 0b_0011_1111);
@@ -172,23 +172,23 @@ namespace GameCube.GX
             byte rgba6_hi = (byte)((rgba6 >> 16) & 0b_1111_1111);
             byte rgba6_mi = (byte)((rgba6 >> 08) & 0b_1111_1111);
             byte rgba6_lo = (byte)((rgba6 >> 00) & 0b_1111_1111);
-            writer.WriteX(rgba6_hi);
-            writer.WriteX(rgba6_mi);
-            writer.WriteX(rgba6_lo);
+            writer.Write(rgba6_hi);
+            writer.Write(rgba6_mi);
+            writer.Write(rgba6_lo);
         }
-        private void WriteRGBA8(BinaryWriter writer)
+        private void WriteRGBA8(EndianBinaryWriter writer)
         {
-            writer.WriteX(r);
-            writer.WriteX(g);
-            writer.WriteX(b);
-            writer.WriteX(a);
+            writer.Write(r);
+            writer.Write(g);
+            writer.Write(b);
+            writer.Write(a);
         }
-        private void WriteRGBX8(BinaryWriter writer)
+        private void WriteRGBX8(EndianBinaryWriter writer)
         {
-            writer.WriteX(r);
-            writer.WriteX(g);
-            writer.WriteX(b);
-            writer.WriteX((byte)0xFF);
+            writer.Write(r);
+            writer.Write(g);
+            writer.Write(b);
+            writer.Write((byte)0xFF);
         }
 
 

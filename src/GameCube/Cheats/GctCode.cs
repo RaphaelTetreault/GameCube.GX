@@ -13,13 +13,13 @@ namespace GameCube.Cheats
         public string name;
         public ulong[] payload;
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(EndianBinaryReader reader)
         {
             var lines = new List<ulong>();
             while (true)
             {
                 // Read line of code, add to list
-                var line = reader.ReadX_UInt64();
+                var line = reader.ReadUInt64();
                 lines.Add(line);
 
                 // If end of code, break loop
@@ -29,9 +29,9 @@ namespace GameCube.Cheats
             payload = lines.ToArray();
         }
 
-        public void Serialize(BinaryWriter writer)
+        public void Serialize(EndianBinaryWriter writer)
         {
-            writer.WriteX(payload);
+            writer.Write(payload);
         }
 
     }

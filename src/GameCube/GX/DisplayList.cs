@@ -63,76 +63,76 @@ namespace GameCube.GX
         }
 
 
-        private void ReadPOS(BinaryReader reader, VertexAttributeFormat fmt, int i)
+        private void ReadPOS(EndianBinaryReader reader, VertexAttributeFormat fmt, int i)
         {
             pos[i] = GXUtility.ReadPos(reader, fmt.pos.NElements, fmt.pos.ComponentType, fmt.pos.NFracBits);
         }
-        private void ReadNRM(BinaryReader reader, VertexAttributeFormat fmt, int i)
+        private void ReadNRM(EndianBinaryReader reader, VertexAttributeFormat fmt, int i)
         {
             nrm[i] = GXUtility.ReadNormal(reader, fmt.nrm.NElements, fmt.nrm.ComponentType, fmt.nrm.NFracBits);
         }
-        private void ReadNBT(BinaryReader reader, VertexAttributeFormat fmt, int i)
+        private void ReadNBT(EndianBinaryReader reader, VertexAttributeFormat fmt, int i)
         {
             nrm[i] = GXUtility.ReadNormal(reader, fmt.nbt.NElements, fmt.nbt.ComponentType, fmt.nbt.NFracBits);
             bnm[i] = GXUtility.ReadNormal(reader, fmt.nbt.NElements, fmt.nbt.ComponentType, fmt.nbt.NFracBits);
             tan[i] = GXUtility.ReadNormal(reader, fmt.nbt.NElements, fmt.nbt.ComponentType, fmt.nbt.NFracBits);
         }
-        private void ReadCLR(BinaryReader reader, VertexAttribute va, int i, GXColor[] clr)
+        private void ReadCLR(EndianBinaryReader reader, VertexAttribute va, int i, GXColor[] clr)
         {
             var color = new GXColor(va.ComponentType);
             color.Deserialize(reader);
             clr[i] = color;
         }
-        private void ReadTEX(BinaryReader reader, VertexAttribute va, int i, float2[] tex)
+        private void ReadTEX(EndianBinaryReader reader, VertexAttribute va, int i, float2[] tex)
         {
             tex[i] = GXUtility.ReadUV(reader, va.NElements, va.ComponentType, va.NFracBits);
         }
-        private void ReadMTXIDX(BinaryReader reader, int i, byte[] mtx_idx)
+        private void ReadMTXIDX(EndianBinaryReader reader, int i, byte[] mtx_idx)
         {
-            reader.ReadX(ref mtx_idx[i]);
+            reader.Read(ref mtx_idx[i]);
         }
 
 
-        private void WritePOS(BinaryWriter writer, VertexAttributeFormat fmt, int i)
+        private void WritePOS(EndianBinaryWriter writer, VertexAttributeFormat fmt, int i)
         {
             var va = fmt.pos;
             GXUtility.WritePosition(writer, pos[i], va.NElements, va.ComponentType, va.NFracBits);
         }
-        private void WriteNRM(BinaryWriter writer, VertexAttributeFormat fmt, int i)
+        private void WriteNRM(EndianBinaryWriter writer, VertexAttributeFormat fmt, int i)
         {
             var va = fmt.nrm;
             GXUtility.WriteNormal(writer, nrm[i], va.NElements, va.ComponentType, va.NFracBits);
         }
-        private void WriteNBT(BinaryWriter writer, VertexAttributeFormat fmt, int i)
+        private void WriteNBT(EndianBinaryWriter writer, VertexAttributeFormat fmt, int i)
         {
             var va = fmt.nbt;
             GXUtility.WriteNormal(writer, nrm[i], va.NElements, va.ComponentType, va.NFracBits);
             GXUtility.WriteNormal(writer, bnm[i], va.NElements, va.ComponentType, va.NFracBits);
             GXUtility.WriteNormal(writer, tan[i], va.NElements, va.ComponentType, va.NFracBits);
         }
-        private void WriteCLR(BinaryWriter writer, VertexAttribute va, int i, GXColor[] clr)
+        private void WriteCLR(EndianBinaryWriter writer, VertexAttribute va, int i, GXColor[] clr)
         {
             clr[i].ComponentType = va.ComponentType;
             clr[i].Serialize(writer);
         }
-        private void WriteTEX(BinaryWriter writer, VertexAttribute va, int i, float2[] tex)
+        private void WriteTEX(EndianBinaryWriter writer, VertexAttribute va, int i, float2[] tex)
         {
             GXUtility.WriteUV(writer, tex[i], va.NElements, va.ComponentType, va.NFracBits);
         }
-        private void WriteMTXIDX(BinaryWriter writer, int i, byte[] mtx_idx)
+        private void WriteMTXIDX(EndianBinaryWriter writer, int i, byte[] mtx_idx)
         {
-            writer.WriteX(mtx_idx[i]);
+            writer.Write(mtx_idx[i]);
         }
 
 
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(EndianBinaryReader reader)
         {
             this.RecordStartAddress(reader);
             {
                 // Read primitive Data
-                reader.ReadX(ref gxCommand);
-                reader.ReadX(ref count);
+                reader.Read(ref gxCommand);
+                reader.Read(ref count);
 
                 // Load vertex attribute format (VAF) from vertex attribute table (VAT)
                 var fmt = vat[gxCommand];
@@ -229,7 +229,7 @@ namespace GameCube.GX
             this.RecordEndAddress(reader);
         }
 
-        public void Serialize(BinaryWriter writer)
+        public void Serialize(EndianBinaryWriter writer)
         {
             // Build a GXAttributes based on the component arrays that are non-zero length
             attributes = ComponentsToGXAttributes();
@@ -291,8 +291,8 @@ namespace GameCube.GX
 
             this.RecordStartAddress(writer);
             {
-                writer.WriteX(gxCommand);
-                writer.WriteX(count);
+                writer.Write(gxCommand);
+                writer.Write(count);
                 for (int i = 0; i < count; i++)
                 {
                     foreach (var serializeComponent in serializeComponents)
