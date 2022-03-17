@@ -2,7 +2,7 @@
 
 namespace GameCube.GX
 {
-    [Serializable]
+    [System.Serializable]
     public class VertexAttribute
     {
         private bool enabled;
