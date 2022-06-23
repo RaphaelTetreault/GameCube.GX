@@ -16,7 +16,7 @@ namespace GameCube.GX
         [FieldOffset(2)] private byte b;
         [FieldOffset(3)] private byte a;
         [FieldOffset(4)] private ComponentType componentType;
- 
+
         public byte R { get => r; set => r = value; }
         public byte G { get => g; set => g = value; }
         public byte B { get => b; set => b = value; }
@@ -99,9 +99,10 @@ namespace GameCube.GX
         }
         private void ReadRGB8(EndianBinaryReader reader)
         {
-            r = reader.ReadUInt8();
-            g = reader.ReadUInt8();
-            b = reader.ReadUInt8();
+            var rgba8 = Read3BytesCorrectEndianness(reader);
+            r = (byte)((rgba8 >> 16) & (0b_1111_1111));
+            r = (byte)((rgba8 >> 08) & (0b_1111_1111));
+            r = (byte)((rgba8 >> 00) & (0b_1111_1111));
         }
         private void ReadRGBA4(EndianBinaryReader reader)
         {
@@ -113,11 +114,7 @@ namespace GameCube.GX
         }
         private void ReadRGBA6(EndianBinaryReader reader)
         {
-            // Reconstruct the 24bit color as uint32
-            var upper16 = reader.ReadUInt16();
-            var lower8 = reader.ReadUInt8();
-            var rgba6 = (uint)(upper16 << 8) | (lower8);
-
+            var rgba6 = Read3BytesCorrectEndianness(reader);
             r = (byte)(((rgba6 >> 18) & (0b_0011_1111)) * (1 << 2));
             g = (byte)(((rgba6 >> 12) & (0b_0011_1111)) * (1 << 2));
             b = (byte)(((rgba6 >> 06) & (0b_0011_1111)) * (1 << 2));
@@ -125,19 +122,36 @@ namespace GameCube.GX
         }
         private void ReadRGBA8(EndianBinaryReader reader)
         {
-            r = reader.ReadUInt8();
-            g = reader.ReadUInt8();
-            b = reader.ReadUInt8();
-            a = reader.ReadUInt8();
+            raw = reader.ReadUInt32();
         }
         private void ReadRGBX8(EndianBinaryReader reader)
         {
-            r = reader.ReadUInt8();
-            g = reader.ReadUInt8();
-            b = reader.ReadUInt8();
-            var _ = reader.ReadUInt8(); // discarded
+            raw = reader.ReadUInt32();
+            a = 0xFF; // discard alpha
         }
 
+        private uint Read3BytesCorrectEndianness(EndianBinaryReader reader)
+        {
+            // Reconstruct the 24bit color as uint32
+            var bytes = reader.ReadBytes(3);
+            if (reader.IsLittleEndian ^ BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            uint color32 = BitConverter.ToUInt32(bytes);
+            uint color24 = color32 & 0x00FFFFFF; // only 3 bytes
+            return color24;
+        }
+
+        private void Write3BytesCorrectEndianness(EndianBinaryWriter writer, uint color24)
+        {
+            var bytes32 = BitConverter.GetBytes(color24);
+            var bytes24 = new byte[3];
+            bytes32.CopyTo(bytes24, 1);
+
+            if (writer.IsLittleEndian ^ BitConverter.IsLittleEndian)
+                Array.Reverse(bytes24);
+
+            writer.Write(bytes24);
+        }
 
         private void WriteRGBA565(EndianBinaryWriter writer)
         {
@@ -149,9 +163,7 @@ namespace GameCube.GX
         }
         private void WriteRGB8(EndianBinaryWriter writer)
         {
-            writer.Write(r);
-            writer.Write(g);
-            writer.Write(b);
+            Write3BytesCorrectEndianness(writer, raw);
         }
         private void WriteRGBA4(EndianBinaryWriter writer)
         {
@@ -169,28 +181,23 @@ namespace GameCube.GX
             byte b6 = (byte)((b >> 6) & 0b_0011_1111);
             byte a6 = (byte)((a >> 6) & 0b_0011_1111);
             uint rgba6 = (uint)(r6 << 18 + g6 << 12 + b6 << 06 + a6 << 00);
-            byte rgba6_hi = (byte)((rgba6 >> 16) & 0b_1111_1111);
-            byte rgba6_mi = (byte)((rgba6 >> 08) & 0b_1111_1111);
-            byte rgba6_lo = (byte)((rgba6 >> 00) & 0b_1111_1111);
-            writer.Write(rgba6_hi);
-            writer.Write(rgba6_mi);
-            writer.Write(rgba6_lo);
+            Write3BytesCorrectEndianness(writer, rgba6);
         }
         private void WriteRGBA8(EndianBinaryWriter writer)
         {
-            writer.Write(r);
-            writer.Write(g);
-            writer.Write(b);
-            writer.Write(a);
+            writer.Write(raw);
         }
         private void WriteRGBX8(EndianBinaryWriter writer)
         {
-            writer.Write(r);
-            writer.Write(g);
-            writer.Write(b);
-            writer.Write((byte)0xFF);
+            // Write color with fixed alpha
+            var color = raw & 0x000000FF;
+            writer.Write(color);
         }
 
+        public override string ToString()
+        {
+            return $"#{raw:x8}";
+        }
 
     }
 }
