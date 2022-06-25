@@ -19,6 +19,9 @@ namespace GameCube.GX
 
         //
         private DisplayCommand gxCommand;
+        //private Primitive primitive;
+        //private VertexFormat vertexFormat;
+        
         private ushort count;
         public byte[] pn_mtx_idx;
         public byte[] tex0_mtx_idx;
@@ -54,6 +57,8 @@ namespace GameCube.GX
         public VertexAttributeTable Vat { get => vat; set => vat = value; }
         public GXAttributes Attributes { get => attributes; set => attributes = value; }
         public DisplayCommand GxCommand { get => gxCommand; set => gxCommand = value; }
+        //public Primitive Primitive { get => primitive; set => primitive = value; }
+        //public VertexFormat VertexFormat { get => vertexFormat; set => vertexFormat = value; }
         public ushort VertexCount { get => count; set => count = value; }
 
         public DisplayList(GXAttributes attr, VertexAttributeTable vat)

@@ -5,7 +5,7 @@ using System.IO;
 namespace GameCube.GX
 {
     [Serializable]
-    public struct DisplayCommand :
+    public class DisplayCommand :
         IBinarySerializable
     {
         // FIELDS
@@ -15,21 +15,26 @@ namespace GameCube.GX
 
 
         // PROPERTIES
-        public byte Command
+        public Primitive Primitive
         {
-            get
-            {
-                return command;
-            }
-
+            get => primitive;
             set
             {
-                command = value;
-                UpdateBitFields();
+                primitive = value;
+                command &= 0b00000111;
+                command |= (byte)primitive;
             }
         }
-        public Primitive Primitive => primitive;
-        public VertexFormat VertexFormat => vertexFormat;
+        public VertexFormat VertexFormat
+        {
+            get => vertexFormat;
+            set
+            {
+                vertexFormat = value;
+                command &= 0b11111000;
+                command |= (byte)vertexFormat;
+            }
+        }
         public byte VertexFormatIndex => (byte)VertexFormat;
 
 
@@ -37,18 +42,13 @@ namespace GameCube.GX
         public void Deserialize(EndianBinaryReader reader)
         {
             reader.Read(ref command);
-            UpdateBitFields();
+            primitive = (Primitive)(command & 0b11111000); // 5 highest bits
+            vertexFormat = (VertexFormat)(command & 0b00000111); // 3 lowest bits
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
             writer.Write(command);
-        }
-
-        private void UpdateBitFields()
-        {
-            primitive = (Primitive)(command & 0b11111000); // 5 highest bits
-            vertexFormat = (VertexFormat)(command & 0b00000111); // 3 lowest bits
         }
 
     }

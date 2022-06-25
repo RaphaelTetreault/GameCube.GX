@@ -14,6 +14,6 @@ namespace GameCube.GX
         GX_VTXFMT5,
         GX_VTXFMT6,
         GX_VTXFMT7,
-        GX_MAX_VTXFMT,
+        //GX_MAX_VTXFMT,
     }
 }

@@ -6,49 +6,56 @@ using System.Runtime.InteropServices;
 
 namespace GameCube.GX
 {
-    [StructLayout(LayoutKind.Explicit)]
+    //[StructLayout(LayoutKind.Explicit)]
     public struct GXColor :
         IBinarySerializable
     {
-        [FieldOffset(0)] private uint raw;
-        [FieldOffset(0)] private byte r;
-        [FieldOffset(1)] private byte g;
-        [FieldOffset(2)] private byte b;
-        [FieldOffset(3)] private byte a;
-        [FieldOffset(4)] private ComponentType componentType;
+        private byte r;
+        private byte g;
+        private byte b;
+        private byte a;
+        private ComponentType componentType;
 
         public byte R { get => r; set => r = value; }
         public byte G { get => g; set => g = value; }
         public byte B { get => b; set => b = value; }
         public byte A { get => a; set => a = value; }
-        public uint Raw { get => raw; set => raw = value; }
         public ComponentType ComponentType { get => componentType; set => componentType = value; }
 
 
-        //public GXColor()
-        //{
-        //    raw = 0;
-        //    r = g = b = a = 0;
-        //    componentType = ComponentType.GX_RGBA8;
-        //}
-
         public GXColor(ComponentType componentType)
         {
-            raw = 0;
             r = g = b = a = 0;
             this.componentType = componentType;
         }
 
+        public GXColor(int raw)
+        {
+            r = (byte)((raw >> 24) & 0b11111111);
+            g = (byte)((raw >> 16) & 0b11111111);
+            b = (byte)((raw >> 08) & 0b11111111);
+            a = (byte)((raw >> 00) & 0b11111111);
+            componentType = ComponentType.GX_RGBA8;
+        }
         public GXColor(uint raw)
         {
-            this.raw = raw;
-            r = g = b = a = 0;
+            r = (byte)((raw >> 24) & 0b11111111);
+            g = (byte)((raw >> 16) & 0b11111111);
+            b = (byte)((raw >> 08) & 0b11111111);
+            a = (byte)((raw >> 00) & 0b11111111);
             componentType = ComponentType.GX_RGBA8;
+        }
+
+        private void GetRGBA8(uint raw)
+        {
+            r = (byte)((raw >> 24) & 0b11111111);
+            g = (byte)((raw >> 16) & 0b11111111);
+            b = (byte)((raw >> 08) & 0b11111111);
+            a = (byte)((raw >> 00) & 0b11111111);
         }
 
         public GXColor(byte r, byte g, byte b, byte a = 255)
         {
-            raw = 0;
             this.r = r;
             this.g = g;
             this.b = b;
@@ -122,11 +129,12 @@ namespace GameCube.GX
         }
         private void ReadRGBA8(EndianBinaryReader reader)
         {
-            raw = reader.ReadUInt32();
+            uint raw = reader.ReadUInt32();
+            GetRGBA8(raw);
         }
         private void ReadRGBX8(EndianBinaryReader reader)
         {
-            raw = reader.ReadUInt32();
+            ReadRGBA8(reader);
             a = 0xFF; // discard alpha
         }
 
@@ -163,6 +171,7 @@ namespace GameCube.GX
         }
         private void WriteRGB8(EndianBinaryWriter writer)
         {
+            uint raw = GetRawRGBA8();
             Write3BytesCorrectEndianness(writer, raw);
         }
         private void WriteRGBA4(EndianBinaryWriter writer)
@@ -185,18 +194,30 @@ namespace GameCube.GX
         }
         private void WriteRGBA8(EndianBinaryWriter writer)
         {
+            uint raw = GetRawRGBA8();
             writer.Write(raw);
         }
         private void WriteRGBX8(EndianBinaryWriter writer)
         {
             // Write color with fixed alpha
+            uint raw = GetRawRGBA8();
             var color = raw & 0x000000FF;
             writer.Write(color);
         }
 
         public override string ToString()
         {
+            uint raw = GetRawRGBA8();
             return $"#{raw:x8}";
+        }
+
+        private uint GetRawRGBA8()
+        {
+            return (uint)(
+                (r << 24) |
+                (g << 16) |
+                (b << 08) |
+                (a << 00));
         }
 
     }
