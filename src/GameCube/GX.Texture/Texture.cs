@@ -24,12 +24,12 @@ namespace GameCube.GX.Texture
             throw new NotImplementedException();
         }
 
-        public static Texture FromDirectTiles(DirectTile[] directTiles, int tilesWidth, int tilesHeight)
+        public static Texture FromDirectBlocks(DirectBlock[] directBlocks, int blocksWidth, int blocksHeight)
         {
             throw new NotImplementedException();
         }
 
-        public static Texture FromIndexTilesAndPalette(IndirectTile[] indirectTiles, int tilesWidth, int tilesHeight, Palette palette)
+        public static Texture FromIndexBlocksAndPalette(IndirectBlock[] indirectBlocks, int blocksWidth, int blocksHeight, Palette palette)
         {
             throw new NotImplementedException();
         }

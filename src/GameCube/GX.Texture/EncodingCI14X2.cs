@@ -1,38 +1,34 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingCI14X2 : IndirectEncoding
+    public sealed class EncodingCI14X2 : IndirectEncoding
     {
-        public override byte TileWidth => throw new NotImplementedException();
+        public override byte BlockWidth => 4;
+        public override byte BlockHeight => 4;
+        public override byte BitsPerIndex => 14;
+        public override ushort MaxPaletteSize => 1 << 14;
 
-        public override byte TileHeight => throw new NotImplementedException();
-
-        public override byte BitsPerPixel => throw new NotImplementedException();
-
-        public override Palette DecodePalette(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            throw new NotImplementedException();
+            var block = new IndirectBlock(BlockWidth, BlockHeight);
+            for (int i = 0; i < block.Indexes.Length; i++)
+            {
+                block.Indexes[i] = reader.ReadUInt16();
+            }
+            return block;
         }
 
-        public override Tile DecodeTile(EndianBinaryReader reader)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            throw new NotImplementedException();
-        }
+            var indirectBlock = block as IndirectBlock;
+            foreach (var index in indirectBlock.Indexes)
+            {
+                // Make sure index is 14 bits at most
+                Assert.IsTrue(index < (1 << 14));
 
-        public override void EncodePalette(EndianBinaryWriter writer, Palette palette)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void EncodeTile(EndianBinaryWriter writerTile, Tile tile)
-        {
-            throw new NotImplementedException();
+                writer.Write(index);
+            }
         }
     }
 }

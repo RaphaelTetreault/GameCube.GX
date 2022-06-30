@@ -48,6 +48,55 @@ namespace GameCube.GX.Texture
                 (b * 0.11f));
         }
 
+        public static TextureColor Mix(TextureColor c0, TextureColor c1, float time01)
+        {
+            bool isTimeValid = time01 <= 0f && time01 >= 1f;
+            if (!isTimeValid)
+                throw new System.Exception($"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive)");
+
+            float timeC0 = time01;
+            float timeC1 = 1f - time01;
+            float r = c0.r * timeC0 + c1.r * timeC1;
+            float g = c0.g * timeC0 + c1.g * timeC1;
+            float b = c0.b * timeC0 + c1.b * timeC1;
+            float a = c0.a * timeC0 + c1.a * timeC1;
+            var color = new TextureColor((byte)r, (byte)g, (byte)b, (byte)a);
+            return color;
+        }
+
+
+        public static TextureColor FromIA4(byte ia4)
+        {
+            byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) * (1 << 4 + 1));
+            byte a = (byte)(((ia4 >> 0) & 0b_0000_1111) * (1 << 4 + 1));
+            var color = new TextureColor(i, a);
+            return color;
+        }
+        public static byte ToIA4(TextureColor c)
+        {
+            byte i = c.GetIntensity();
+            byte i4 = (byte)(i >> 4);
+            byte a4 = (byte)(c.a >> 4);
+            byte ia8 = (byte)(i4 << 4 + a4 << 0);
+            return ia8;
+        }
+
+
+        public static TextureColor FromIA8(ushort ia8)
+        {
+            byte i = (byte)((ia8 >> 8) & 0b_1111_1111);
+            byte a = (byte)((ia8 >> 0) & 0b_1111_1111);
+            var color = new TextureColor(i, a);
+            return color;
+        }
+        public static ushort ToIA8(TextureColor c)
+        {
+            byte i = c.GetIntensity();
+            byte a = c.a;
+            ushort ia8 = (ushort)(i << 8 + a << 00);
+            return ia8;
+        }
+
         #region RGB565
         public static TextureColor FromRGB565(ushort rgb565)
         {
@@ -81,9 +130,9 @@ namespace GameCube.GX.Texture
             }
             else
             {
-                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) * (1 << 4));
-                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) * (1 << 4));
-                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) * (1 << 4));
+                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) * (1 << 3));
+                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) * (1 << 3));
+                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) * (1 << 3));
                 a = 0xFF;
             }
             var color = new TextureColor(r, g, b, a);
@@ -100,9 +149,9 @@ namespace GameCube.GX.Texture
             if (isVeryOpaque)
             {
                 // a is const 1 in bit position 15, 0x8000
-                r = (byte)((c.r >> 3) & 0b_0001_1111);
-                g = (byte)((c.g >> 3) & 0b_0001_1111);
-                b = (byte)((c.b >> 3) & 0b_0001_1111);
+                r = (byte)((c.r >> 3) & 0b_0001_1111); // 5 bits
+                g = (byte)((c.g >> 3) & 0b_0001_1111); // 5 bits
+                b = (byte)((c.b >> 3) & 0b_0001_1111); // 5 bits
                 rgb5a3 = (ushort)(0x8000 + r << 10 + g << 5 + b << 0);
             }
             else

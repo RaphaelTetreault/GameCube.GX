@@ -1,28 +1,43 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingIA4 : DirectEncoding
+    public sealed class EncodingIA4 : DirectEncoding
     {
-        public override byte TileWidth => throw new NotImplementedException();
+        public override byte BlockWidth => 8;
+        public override byte BlockHeight => 4;
+        public override byte BitsPerColor => 8;
 
-        public override byte TileHeight => throw new NotImplementedException();
-
-        public override byte BitsPerPixel => throw new NotImplementedException();
-
-        public override Tile DecodeTile(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            throw new NotImplementedException();
+            var block = new DirectBlock(BlockWidth, BlockHeight);
+            for (int y = 0; y < block.Height; y++)
+            {
+                for (int x = 0; x < block.Width; x++)
+                {
+                    byte ia4 = reader.ReadByte();
+                    var color = TextureColor.FromIA4(ia4);
+                    int index = x + (y * block.Width);
+                    block[index] = color;
+                }
+            }
+            return block;
         }
 
-        public override void EncodeTile(EndianBinaryWriter writerTile, Tile tile)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            throw new NotImplementedException();
+            var colorBlock = block as DirectBlock;
+            for (int y = 0; y < block.Height; y++)
+            {
+                for (int x = 0; x < block.Width; x++)
+                {
+                    int index = x + (y * block.Width);
+                    var color = colorBlock[index];
+                    byte ia4 = TextureColor.ToIA4(color);
+                    writer.Write(ia4);
+                }
+            }
         }
+
     }
 }

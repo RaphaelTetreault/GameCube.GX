@@ -1,45 +1,33 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingCI8 : IndirectEncoding
+    public sealed class EncodingCI8 : IndirectEncoding
     {
-        public override byte TileWidth => 8;
+        public override byte BlockWidth => 8;
+        public override byte BlockHeight => 4;
+        public override byte BitsPerIndex => 8;
+        public override ushort MaxPaletteSize => 1 << 8;
 
-        public override byte TileHeight => 4;
 
-        public override byte BitsPerPixel => 8;
-
-        public override Palette DecodePalette(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            throw new NotImplementedException();
-        }
-
-        public override Tile DecodeTile(EndianBinaryReader reader)
-        {
-            var tile = new IndirectTile(TileWidth, TileHeight);
-            for (int i = 0; i < tile.Indexes.Length; i++)
+            var block = new IndirectBlock(BlockWidth, BlockHeight);
+            for (int i = 0; i < block.Indexes.Length; i++)
             {
-                tile.Indexes[i] = reader.ReadByte();
+                block.Indexes[i] = reader.ReadByte();
             }
-            return tile;
+            return block;
         }
 
-        public override void EncodePalette(EndianBinaryWriter writer, Palette palette)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            throw new NotImplementedException();
-        }
-
-        public override void EncodeTile(EndianBinaryWriter writerTile, Tile tile)
-        {
-            var indexTile = tile as IndirectTile;
-            foreach (var index in indexTile.Indexes)
-                writerTile.Write(index);
+            var indirectBlock = block as IndirectBlock;
+            foreach (var index in indirectBlock.Indexes)
+            {
+                byte index8 = checked((byte)index);
+                writer.Write(index8);
+            }
         }
     }
 }

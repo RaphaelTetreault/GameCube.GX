@@ -2,37 +2,37 @@
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingRGB565 : DirectEncoding
+    public sealed class EncodingRGB565 : DirectEncoding
     {
-        public override byte TileWidth => 4;
-        public override byte TileHeight => 4;
-        public override byte BitsPerPixel => 16;
+        public override byte BlockWidth => 4;
+        public override byte BlockHeight => 4;
+        public override byte BitsPerColor => 16;
 
-        public override Tile DecodeTile(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            var tile = new DirectTile(TileWidth, TileHeight);
-            for (int y = 0; y < tile.Height; y++)
+            var block = new DirectBlock(BlockWidth, BlockHeight);
+            for (int y = 0; y < block.Height; y++)
             {
-                for (int x = 0; x < tile.Width; x++)
+                for (int x = 0; x < block.Width; x++)
                 {
                     ushort rgb565 = reader.ReadUInt16();
                     var color = TextureColor.FromRGB565(rgb565);
-                    int index = x + (y * tile.Width);
-                    tile[index] = color;
+                    int index = x + (y * block.Width);
+                    block[index] = color;
                 }
             }
-            return tile;
+            return block;
         }
 
-        public override void EncodeTile(EndianBinaryWriter writer, Tile tile)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            var colorTile = tile as DirectTile;
-            for (int y = 0; y < tile.Height; y++)
+            var colorBlock = block as DirectBlock;
+            for (int y = 0; y < block.Height; y++)
             {
-                for (int x = 0; x < tile.Width; x++)
+                for (int x = 0; x < block.Width; x++)
                 {
-                    int index = x + (y * tile.Width);
-                    var color = colorTile[index];
+                    int index = x + (y * block.Width);
+                    var color = colorBlock[index];
                     ushort rgb565 = TextureColor.ToRGB565(color);
                     writer.Write(rgb565);
                 }

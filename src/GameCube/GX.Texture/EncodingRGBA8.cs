@@ -2,16 +2,19 @@
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingRGBA8 : DirectEncoding
+    public sealed class EncodingRGBA8 : DirectEncoding
     {
-        public override byte TileWidth => 4;
-        public override byte TileHeight => 4;
-        public override byte BitsPerPixel => 32;
+        // Big lie: RGBA8 takes 2 4x4 blocks, one is AR then the other GB
+        // However, since they are ordered like so, you can treat it like
+        // a 4x4 blocks but of size 64 bytes rather than 32 bytes.
+        public override byte BlockWidth => 4;
+        public override byte BlockHeight => 4;
+        public override byte BitsPerColor => 32;
 
-        public override Tile DecodeTile(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            var directTile = new DirectTile(TileWidth, TileHeight);
-            int size = TileWidth * TileHeight;
+            var directBlock = new DirectBlock(BlockWidth, BlockHeight);
+            int size = BlockWidth * BlockHeight;
             var bytes = reader.ReadBytes(size);
             var colors = new TextureColor[size / 4];
             var a = ExtractBytes(bytes, 00, 2, 16);
@@ -20,28 +23,28 @@ namespace GameCube.GX.Texture
             var b = ExtractBytes(bytes, 17, 2, 16);
             for (int i = 0; i < colors.Length; i++)
                 colors[i] = new TextureColor(r[i], g[i], b[i], a[i]);
-            directTile.Colors = colors;
-            return directTile;
+            directBlock.Colors = colors;
+            return directBlock;
         }
 
-        public override void EncodeTile(EndianBinaryWriter writer, Tile tile)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            var directTile = tile as DirectTile;
-            int nColors = directTile.Colors.Length;
-            Assert.IsTrue(nColors == TileWidth * TileHeight);
+            var directBlock = block as DirectBlock;
+            int nColors = directBlock.Colors.Length;
+            Assert.IsTrue(nColors == BlockWidth * BlockHeight);
             var a = new byte[nColors];
             var r = new byte[nColors];
             var g = new byte[nColors];
             var b = new byte[nColors];
             for (int i = 0; i < nColors; i++)
             {
-                var color = directTile.Colors[i];
+                var color = directBlock.Colors[i];
                 a[i] = color.a;
                 r[i] = color.r;
                 g[i] = color.g;
                 b[i] = color.b;
             }
-            var bytes = new byte[TileWidth * TileHeight];
+            var bytes = new byte[BlockWidth * BlockHeight];
             InterleaveBytes(a, 00, 2, 16, ref bytes);
             InterleaveBytes(r, 01, 2, 16, ref bytes);
             InterleaveBytes(g, 16, 2, 16, ref bytes);

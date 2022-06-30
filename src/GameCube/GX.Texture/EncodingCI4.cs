@@ -1,38 +1,45 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GX.Texture
 {
-    public class EncodingCI4 : IndirectEncoding
+    public sealed class EncodingCI4 : IndirectEncoding
     {
-        public override byte TileWidth => throw new NotImplementedException();
+        public override byte BlockWidth => 8;
+        public override byte BlockHeight => 8;
+        public override byte BitsPerIndex => 4;
+        public override ushort MaxPaletteSize => 1 << 4;
 
-        public override byte TileHeight => throw new NotImplementedException();
 
-        public override byte BitsPerPixel => throw new NotImplementedException();
-
-        public override Palette DecodePalette(EndianBinaryReader reader)
+        public override Block ReadBlock(EndianBinaryReader reader)
         {
-            throw new NotImplementedException();
+            var block = new IndirectBlock(BlockWidth, BlockHeight);
+            Assert.IsTrue(block.Indexes.Length % 2 == 0);
+
+            // process 2 indexes at a time
+            for (int i = 0; i < block.Indexes.Length; i += 2)
+            {
+                byte indexes01 = reader.ReadByte();
+                byte index0 = (byte)((indexes01 >> 4) & 0b_0000_1111);
+                byte index1 = (byte)((indexes01 >> 0) & 0b_0000_1111);
+                block.Indexes[i + 0] = index0;
+                block.Indexes[i + 1] = index1;
+            }
+            return block;
         }
 
-        public override Tile DecodeTile(EndianBinaryReader reader)
+        public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            throw new NotImplementedException();
-        }
+            var indeirectBlock = block as IndirectBlock;
+            Assert.IsTrue(indeirectBlock.Indexes.Length % 2 == 0);
 
-        public override void EncodePalette(EndianBinaryWriter writer, Palette palette)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void EncodeTile(EndianBinaryWriter writerTile, Tile tile)
-        {
-            throw new NotImplementedException();
+            // Process 2 indexes at a time
+            for (int i = 0; i < indeirectBlock.Indexes.Length; i += 2)
+            {
+                byte index0 = checked((byte)(i * 2));
+                byte index1 = checked((byte)(index0 + 1));
+                byte indexes01 = (byte)(index0 << 4 + index1 << 0);
+                writer.Write(indexes01);
+            }
         }
     }
 }
