@@ -7,11 +7,12 @@ namespace GameCube.GX.Texture
         public override byte BlockWidth => 8;
         public override byte BlockHeight => 8;
         public override byte BitsPerColor => 4;
+        public override TextureFormat Format => TextureFormat.CMPR;
 
 
         public override Block ReadBlock(EndianBinaryReader reader)
         {
-            var block = new DirectBlock(BlockWidth, BlockHeight);
+            var block = new DirectBlock(BlockWidth, BlockHeight, Format);
 
             // CMPR 8x8 is split into 2x2, ie quadrants
             for (int qy = 0; qy < 2; qy++)

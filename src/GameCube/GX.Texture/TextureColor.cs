@@ -81,7 +81,6 @@ namespace GameCube.GX.Texture
             return ia8;
         }
 
-
         public static TextureColor FromIA8(ushort ia8)
         {
             byte i = (byte)((ia8 >> 8) & 0b_1111_1111);
@@ -97,7 +96,6 @@ namespace GameCube.GX.Texture
             return ia8;
         }
 
-        #region RGB565
         public static TextureColor FromRGB565(ushort rgb565)
         {
             byte r = (byte)(((rgb565 >> 11) & (0b_0001_1111)) * (1 << 3));
@@ -114,9 +112,7 @@ namespace GameCube.GX.Texture
             ushort rgb565 = (ushort)(r5 << 11 + g6 << 05 + b5 << 00);
             return rgb565;
         }
-        #endregion
 
-        #region RGB5A3
         public static TextureColor FromRGB5A3(ushort rgb5a3)
         {
             byte r, g, b, a;
@@ -164,7 +160,6 @@ namespace GameCube.GX.Texture
             }
             return rgb5a3;
         }
-        #endregion
 
     }
 }

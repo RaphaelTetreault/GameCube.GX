@@ -10,10 +10,12 @@ namespace GameCube.GX.Texture
         public override byte BlockWidth => 4;
         public override byte BlockHeight => 4;
         public override byte BitsPerColor => 32;
+        public override TextureFormat Format => TextureFormat.RGBA8;
+
 
         public override Block ReadBlock(EndianBinaryReader reader)
         {
-            var directBlock = new DirectBlock(BlockWidth, BlockHeight);
+            var directBlock = new DirectBlock(BlockWidth, BlockHeight, Format);
             int size = BlockWidth * BlockHeight;
             var bytes = reader.ReadBytes(size);
             var colors = new TextureColor[size / 4];

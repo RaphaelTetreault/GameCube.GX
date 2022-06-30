@@ -8,11 +8,12 @@ namespace GameCube.GX.Texture
         public override byte BlockHeight => 8;
         public override byte BitsPerIndex => 4;
         public override ushort MaxPaletteSize => 1 << 4;
+        public override TextureFormat Format => TextureFormat.CI4;
 
 
         public override Block ReadBlock(EndianBinaryReader reader)
         {
-            var block = new IndirectBlock(BlockWidth, BlockHeight);
+            var block = new IndirectBlock(BlockWidth, BlockHeight, Format);
             Assert.IsTrue(block.Indexes.Length % 2 == 0);
 
             // process 2 indexes at a time

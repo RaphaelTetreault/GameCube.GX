@@ -4,6 +4,9 @@ namespace GameCube.GX.Texture
 {
     public sealed class PaletteIA8 : Palette
     {
+        public override TextureFormat Format => TextureFormat.IA8;
+
+
         public override void ReadPalette(EndianBinaryReader reader, IndirectEncoding indirectEncoding)
         {
             Colors = new TextureColor[indirectEncoding.MaxPaletteSize];

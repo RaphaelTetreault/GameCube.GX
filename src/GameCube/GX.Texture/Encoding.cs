@@ -4,7 +4,7 @@ namespace GameCube.GX.Texture
 {
     public abstract class Encoding
     {
-        // Encodings for direct textures
+        // Encodings for textures
         public static readonly EncodingI4 EncodingI4 = new();
         public static readonly EncodingI8 EncodingI8 = new();
         public static readonly EncodingIA4 EncodingIA4 = new();
@@ -16,27 +16,15 @@ namespace GameCube.GX.Texture
         public static readonly EncodingCI8 EncodingCI8 = new();
         public static readonly EncodingCI14X2 EncodingCI14X2 = new();
         public static readonly EncodingCMPR EncodingCMPR = new();
-        // Palettes for indirect textures
-        public static readonly PaletteIA8 PaletteIA8 = new();
-        public static readonly PaletteRGB565 PaletteRGB565 = new();
-        public static readonly PaletteRGB5A3 PaletteRGB5A3 = new();
 
         public abstract byte BlockWidth { get; }
         public abstract byte BlockHeight { get; }
-
+        public abstract bool IsDirect { get; }
+        public abstract bool IsIndirect { get; }
+        public abstract TextureFormat Format { get; }
 
         public abstract Block ReadBlock(EndianBinaryReader reader);
-        public Texture DecodeTexture(EndianBinaryReader reader, int width, int height)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public abstract void WriteBlock(EndianBinaryWriter writerBlock, Block block);
-        public void EncodeTexture(EndianBinaryWriter writer, Texture texture)
-        {
-            throw new System.NotImplementedException();
-        }
-
 
         public static Encoding GetEncoding(TextureFormat textureFormat)
         {
@@ -57,15 +45,5 @@ namespace GameCube.GX.Texture
             }
         }
 
-        public static Palette GetPalette(TextureFormat textureFormat)
-        {
-            switch (textureFormat)
-            {
-                case TextureFormat.IA8: return PaletteIA8;
-                case TextureFormat.RGB565: return PaletteRGB565;
-                case TextureFormat.RGB5A3: return PaletteRGB5A3;
-                default: throw new System.Exception($"No palette defined for texture format {textureFormat}.");
-            }
-        }
     }
 }

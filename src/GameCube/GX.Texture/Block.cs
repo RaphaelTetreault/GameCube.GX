@@ -4,10 +4,13 @@
     {
         public readonly byte Width;
         public readonly byte Height;
-        public Block(byte width, byte height)
+        public readonly TextureFormat Format;
+
+        public Block(byte width, byte height, TextureFormat format)
         {
             Width = width;
             Height = height;
+            Format = format;
         }
     }
 }
