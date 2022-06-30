@@ -8,13 +8,13 @@ namespace GameCube.GX.Texture
 {
     public class DirectTile : Tile
     {
-        public TextureColor[] Pixels { get; private set; }
+        public TextureColor[] Colors { get; set; }
 
-        public TextureColor this[int i] { get => Pixels[i]; set => Pixels[i] = value; }
+        public TextureColor this[int i] { get => Colors[i]; set => Colors[i] = value; }
 
         public DirectTile(byte width, byte height) : base(width, height)
         {
-            Pixels = new TextureColor[Width * Height];
+            Colors = new TextureColor[Width * Height];
         }
     }
 }

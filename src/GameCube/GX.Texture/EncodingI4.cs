@@ -12,9 +12,7 @@ namespace GameCube.GX.Texture
     public class EncodingI4 : DirectEncoding
     {
         public override byte TileWidth => 8;
-
         public override byte TileHeight => 8;
-
         public override byte BitsPerPixel => 4;
 
 

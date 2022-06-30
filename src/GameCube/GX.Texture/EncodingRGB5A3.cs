@@ -1,28 +1,42 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GX.Texture
 {
     public class EncodingRGB5A3 : DirectEncoding
     {
-        public override byte TileWidth => throw new NotImplementedException();
-
-        public override byte TileHeight => throw new NotImplementedException();
-
-        public override byte BitsPerPixel => throw new NotImplementedException();
+        public override byte TileWidth => 4;
+        public override byte TileHeight => 4;
+        public override byte BitsPerPixel => 16;
 
         public override Tile DecodeTile(EndianBinaryReader reader)
         {
-            throw new NotImplementedException();
+            var tile = new DirectTile(TileWidth, TileHeight);
+            for (int y = 0; y < tile.Height; y++)
+            {
+                for (int x = 0; x < tile.Width; x++)
+                {
+                    ushort rgb5a3 = reader.ReadUInt16();
+                    var color = TextureColor.FromRGB565(rgb5a3);
+                    int index = x + (y * tile.Width);
+                    tile[index] = color;
+                }
+            }
+            return tile;
         }
 
-        public override void EncodeTile(EndianBinaryWriter writerTile, Tile tile)
+        public override void EncodeTile(EndianBinaryWriter writer, Tile tile)
         {
-            throw new NotImplementedException();
+            var colorTile = tile as DirectTile;
+            for (int y = 0; y < tile.Height; y++)
+            {
+                for (int x = 0; x < tile.Width; x++)
+                {
+                    int index = x + (y * tile.Width);
+                    var color = colorTile[index];
+                    ushort rgb5a3 = TextureColor.ToRGB5A3(color);
+                    writer.Write(rgb5a3);
+                }
+            }
         }
     }
 }
