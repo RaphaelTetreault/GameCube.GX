@@ -67,8 +67,8 @@ namespace GameCube.GX.Texture
 
         public static TextureColor FromIA4(byte ia4)
         {
-            byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) * (1 << 4 + 1));
-            byte a = (byte)(((ia4 >> 0) & 0b_0000_1111) * (1 << 4 + 1));
+            byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) * ((1 << 4) + 1));
+            byte a = (byte)(((ia4 >> 0) & 0b_0000_1111) * ((1 << 4) + 1));
             var color = new TextureColor(i, a);
             return color;
         }
@@ -120,9 +120,9 @@ namespace GameCube.GX.Texture
             if (hasAlpha)
             {
                 a = (byte)(((rgb5a3 >> 12) & (0b_0000_0111)) * (1 << 5));
-                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) * (1 << 4 + 1));
-                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) * (1 << 4 + 1));
-                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) * (1 << 4 + 1));
+                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) * ((1 << 4) + 1));
+                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) * ((1 << 4) + 1));
+                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) * ((1 << 4) + 1));
             }
             else
             {

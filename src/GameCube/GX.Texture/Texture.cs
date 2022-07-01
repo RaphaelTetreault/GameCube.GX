@@ -83,10 +83,12 @@ namespace GameCube.GX.Texture
                 {
                     for (int w = 0; w < blocksWidth; w++)
                     {
-                        int blockIndex = h * blocksWidth + w;
+                        // Which block we are sampling
+                        int blockIndex = w + h * blocksWidth;
                         for (int x = 0; x < subBlockWidth; x++)
                         {
-                            int colorIndex = y * subBlockWidth + x;
+                            // Which sub-block we are sampling
+                            int colorIndex = x + y * subBlockWidth;
                             var block = directBlocks[blockIndex];
                             var color = block.Colors[colorIndex];
                             texture.Pixels[pixelIndex++] = color;

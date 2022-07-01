@@ -29,16 +29,21 @@ namespace GameCube.GX.Texture
 
                     // Now that we have the data, get colors for each index
                     // and place it in the direct color block
-                    int quadrantBaseIndex = qy * 32 + qx * 4; // 2x2 mapped to 8x8
+
+                    // 2x2 mapped to 8x8: this index is the first for each quadrant
+                    int quadrantIndex2x2 = qx * 4 + qy * 32; 
                     for (int y = 0; y < 4; y++)
                     {
                         for (int x = 0; x < 4; x++)
                         {
-                            int subdivisionIndex = x + y * 4; // 4x4
-                            int blockColorIndex = quadrantBaseIndex + subdivisionIndex; // true 8x8 index
-                            byte colorIndex = indexes[subdivisionIndex];
-                            var color = palette[colorIndex];
-                            block.Colors[blockColorIndex] = color;
+                            // Get color
+                            int blockIndex4x4 = x + y * 4; // 4x4 index
+                            byte paletteIndex = indexes[blockIndex4x4];
+                            var color = palette[paletteIndex];
+
+                            // Store color
+                            int blockIndex8x8 = x + (y * 8) + quadrantIndex2x2; // true 8x8 index
+                            block.Colors[blockIndex8x8] = color;
                         }
                     }
                 }
@@ -107,7 +112,9 @@ namespace GameCube.GX.Texture
             byte[] indexes = new byte[4*4];
             for (int i = 0; i < indexes.Length; i++)
             {
-                indexes[i] = (byte)((indexesPacked >> i) & 0b_11);
+                // left-most bits are index0, rightmost are index15
+                int rightShift = (15 - i) * 2;
+                indexes[i] = (byte)((indexesPacked >> rightShift) & 0b_11);
             }
             return indexes;
         }

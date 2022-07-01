@@ -25,8 +25,9 @@ namespace GameCube.GX.Texture
 
                     int indexNybbleHigh = x + (y * block.Width);
                     int indexNybbleLow = indexNybbleHigh + 1;
-                    byte intentsity0 = (byte)((nybbles >> 4) & 0b_0000_1000);
-                    byte intentsity1 = (byte)((nybbles >> 0) & 0b_0000_1000);
+                    // TODO: move to TextureColor
+                    byte intentsity0 = (byte)(((nybbles >> 4) & 0b_0000_1111) * ((1 << 4) + 1));
+                    byte intentsity1 = (byte)(((nybbles >> 0) & 0b_0000_1111) * ((1 << 4) + 1));
 
                     block[indexNybbleHigh] = new TextureColor(intentsity0);
                     block[indexNybbleLow] = new TextureColor(intentsity1);
