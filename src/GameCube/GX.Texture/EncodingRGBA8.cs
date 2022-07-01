@@ -20,10 +20,10 @@ namespace GameCube.GX.Texture
             int nBytes = nColors * BytesPerPixel;
             var bytes = reader.ReadBytes(nBytes);
             var colors = new TextureColor[nColors];
-            var a = ExtractBytes(bytes, 00, 2, 16);
-            var r = ExtractBytes(bytes, 01, 2, 16);
-            var g = ExtractBytes(bytes, 16, 2, 16);
-            var b = ExtractBytes(bytes, 17, 2, 16);
+            var a = ExtractBytes(bytes, 33, 2, 16);
+            var r = ExtractBytes(bytes, 32, 2, 16);
+            var g = ExtractBytes(bytes, 01, 2, 16);
+            var b = ExtractBytes(bytes, 00, 2, 16);
             for (int i = 0; i < colors.Length; i++)
                 colors[i] = new TextureColor(r[i], g[i], b[i], a[i]);
             directBlock.Colors = colors;
@@ -48,10 +48,10 @@ namespace GameCube.GX.Texture
                 b[i] = color.b;
             }
             var bytes = new byte[BlockWidth * BlockHeight];
-            InterleaveBytes(a, 00, 2, 16, ref bytes);
-            InterleaveBytes(r, 01, 2, 16, ref bytes);
-            InterleaveBytes(g, 16, 2, 16, ref bytes);
-            InterleaveBytes(b, 17, 2, 16, ref bytes);
+            InterleaveBytes(a, 33, 2, 16, ref bytes);
+            InterleaveBytes(r, 32, 2, 16, ref bytes);
+            InterleaveBytes(g, 01, 2, 16, ref bytes);
+            InterleaveBytes(b, 00, 2, 16, ref bytes);
             writer.Write(bytes);
         }
 

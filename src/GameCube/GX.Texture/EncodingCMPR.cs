@@ -37,7 +37,7 @@ namespace GameCube.GX.Texture
                         for (int x = 0; x < 4; x++)
                         {
                             // Get color
-                            int blockIndex4x4 = x + y * 4; // 4x4 index
+                            int blockIndex4x4 = x + (y * 4); // sub 4x4 index
                             byte paletteIndex = indexes[blockIndex4x4];
                             var color = palette[paletteIndex];
 
