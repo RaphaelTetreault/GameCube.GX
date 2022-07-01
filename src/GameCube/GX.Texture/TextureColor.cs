@@ -50,9 +50,9 @@ namespace GameCube.GX.Texture
 
         public static TextureColor Mix(TextureColor c0, TextureColor c1, float time01)
         {
-            bool isTimeValid = time01 <= 0f && time01 >= 1f;
+            bool isTimeValid = time01 >= 0f && time01 <= 1f;
             if (!isTimeValid)
-                throw new System.Exception($"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive)");
+                throw new System.Exception($"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive). Value was: {time01}.");
 
             float timeC0 = time01;
             float timeC1 = 1f - time01;

@@ -2,6 +2,12 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Invaluable resource: <see href="https://wiki.tockdom.com/wiki/Image_Formats"></see>
+    /// </remarks>
     public class Texture
     {
         public TextureFormat Format { get; set; }
@@ -59,11 +65,15 @@ namespace GameCube.GX.Texture
         {
             int subBlockWidth = directBlocks[0].Width;
             int subBlockHeight = directBlocks[0].Height;
-            var texture = new Texture();
-            texture.Format = directBlocks[0].Format;
-            texture.Width = blocksWidth * subBlockWidth;
-            texture.Height = blocksHeight * subBlockHeight;
-            texture.Blocks = directBlocks;
+            int pixelsCount = blocksWidth * blocksHeight * subBlockWidth * subBlockHeight;
+            var texture = new Texture
+            {
+                Format = directBlocks[0].Format,
+                Width = blocksWidth * subBlockWidth,
+                Height = blocksHeight * subBlockHeight,
+                Pixels = new TextureColor[pixelsCount],
+                Blocks = directBlocks,
+            };
 
             int pixelIndex = 0;
             // Linearize texture pixels
@@ -79,7 +89,7 @@ namespace GameCube.GX.Texture
                             int colorIndex = y * subBlockWidth + x;
                             var block = directBlocks[blockIndex];
                             var color = block.Colors[colorIndex];
-                            texture.Pixels[pixelIndex] = color;
+                            texture.Pixels[pixelIndex++] = color;
                         }
                     }
                 }
@@ -91,12 +101,16 @@ namespace GameCube.GX.Texture
         {
             int subBlockWidth = indirectBlocks[0].Width;
             int subBlockHeight = indirectBlocks[0].Height;
-            var texture = new Texture();
-            texture.Format = indirectBlocks[0].Format;
-            texture.Width = blocksWidth * subBlockWidth;
-            texture.Height = blocksHeight * subBlockHeight;
-            texture.Palette = palette;
-            texture.Blocks = indirectBlocks;
+            int pixelsCount = blocksWidth * blocksHeight * subBlockWidth * subBlockHeight;
+            var texture = new Texture
+            {
+                Format = indirectBlocks[0].Format,
+                Width = blocksWidth * subBlockWidth,
+                Height = blocksHeight * subBlockHeight,
+                Pixels = new TextureColor[pixelsCount],
+                Palette = palette,
+                Blocks = indirectBlocks,
+            };
 
             int pixelIndex = 0;
             // Linearize texture pixels
@@ -113,7 +127,7 @@ namespace GameCube.GX.Texture
                             var indirectBlock = indirectBlocks[blockIndex];
                             var indirectIndex = indirectBlock.Indexes[subBlockIndex];
                             var color = palette.Colors[indirectIndex];
-                            texture.Pixels[pixelIndex] = color;
+                            texture.Pixels[pixelIndex++] = color;
                         }
                     }
                 }

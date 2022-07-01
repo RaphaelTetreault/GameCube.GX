@@ -16,9 +16,10 @@ namespace GameCube.GX.Texture
         public override Block ReadBlock(EndianBinaryReader reader)
         {
             var directBlock = new DirectBlock(BlockWidth, BlockHeight, Format);
-            int size = BlockWidth * BlockHeight;
-            var bytes = reader.ReadBytes(size);
-            var colors = new TextureColor[size / 4];
+            int nColors = BlockWidth * BlockHeight;
+            int nBytes = nColors * BytesPerPixel;
+            var bytes = reader.ReadBytes(nBytes);
+            var colors = new TextureColor[nColors];
             var a = ExtractBytes(bytes, 00, 2, 16);
             var r = ExtractBytes(bytes, 01, 2, 16);
             var g = ExtractBytes(bytes, 16, 2, 16);

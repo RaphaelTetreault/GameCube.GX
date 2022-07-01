@@ -24,7 +24,32 @@ namespace GameCube.GX.Texture
         public abstract TextureFormat Format { get; }
 
         public abstract Block ReadBlock(EndianBinaryReader reader);
-        public abstract void WriteBlock(EndianBinaryWriter writerBlock, Block block);
+        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksWidth, int blocksHeight, Encoding encoding)
+            where TBlock : Block
+        {
+            int blocksCount = blocksWidth * blocksHeight;
+            var blocks = new TBlock[blocksCount];
+            for (int i = 0; i < blocksCount; i++)
+                blocks[i] = encoding.ReadBlock(reader) as TBlock;
+            return blocks;
+        }
+
+        public abstract void WriteBlock(EndianBinaryWriter writer, Block block);
+        public void WriteBlocks(EndianBinaryWriter writer, Block[] blocks, int blocksWidth, int blocksHeight)
+        {
+            int blocksCount = blocksWidth * blocksHeight;
+            Assert.IsTrue(blocks.Length == blocksCount);
+
+            for (int h = 0; h < blocksHeight; h++)
+            {
+                for (int w = 0; w < blocksWidth; w++)
+                {
+                    int index = w + h * blocksWidth;
+                    var block = blocks[index];
+                    WriteBlock(writer, block);
+                }
+            }
+        }
 
         public static Encoding GetEncoding(TextureFormat textureFormat)
         {
@@ -40,7 +65,7 @@ namespace GameCube.GX.Texture
                 case TextureFormat.CI4: return EncodingCI4;
                 case TextureFormat.CI8: return EncodingCI8;
                 case TextureFormat.CI14X2: return EncodingCI14X2;
-                case TextureFormat.CMPR: return EncodingCMPR ;
+                case TextureFormat.CMPR: return EncodingCMPR;
                 default: throw new System.Exception($"Unhandled texture format {textureFormat}.");
             }
         }

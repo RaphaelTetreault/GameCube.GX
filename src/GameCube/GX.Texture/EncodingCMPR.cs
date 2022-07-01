@@ -34,7 +34,7 @@ namespace GameCube.GX.Texture
                     {
                         for (int x = 0; x < 4; x++)
                         {
-                            int subdivisionIndex = y * 4 + x; // 4x4
+                            int subdivisionIndex = x + y * 4; // 4x4
                             int blockColorIndex = quadrantBaseIndex + subdivisionIndex; // true 8x8 index
                             byte colorIndex = indexes[subdivisionIndex];
                             var color = palette[colorIndex];

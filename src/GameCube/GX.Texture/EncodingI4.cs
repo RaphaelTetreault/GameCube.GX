@@ -23,7 +23,7 @@ namespace GameCube.GX.Texture
                 {
                     byte nybbles = reader.ReadByte();
 
-                    int indexNybbleHigh = (x * 2) + (y * block.Width);
+                    int indexNybbleHigh = x + (y * block.Width);
                     int indexNybbleLow = indexNybbleHigh + 1;
                     byte intentsity0 = (byte)((nybbles >> 4) & 0b_0000_1000);
                     byte intentsity1 = (byte)((nybbles >> 0) & 0b_0000_1000);
