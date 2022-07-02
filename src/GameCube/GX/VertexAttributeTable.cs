@@ -55,7 +55,7 @@ namespace GameCube.GX
             }
         }
 
-        public bool HasAttr(DisplayCommand gxCmd, GXAttributes attribute)
+        public bool HasAttr(DisplayCommand gxCmd, AttributeFlags attribute)
         {
             Assert.IsTrue(gxCmd.VertexFormatIndex < 8);
 

@@ -5,12 +5,10 @@ namespace GameCube.GX
     [System.Serializable]
     public class VertexAttribute
     {
-        private bool enabled;
         private ComponentCount nElements;
         private ComponentType componentFormat;
         private int nFracBits;
 
-        public bool Enabled { get => enabled; set => enabled = value; }
         public ComponentCount NElements { get => nElements; set => nElements = value; }
         public ComponentType ComponentType { get => componentFormat; set => componentFormat = value; }
         public int NFracBits { get => nFracBits; set => nFracBits = value; }
@@ -25,7 +23,6 @@ namespace GameCube.GX
             // Make sure nFracBits is not negative
             Assert.IsTrue(nFracBits >= 0);
 
-            this.enabled = true;
             this.nElements = nElements;
             this.componentFormat = format;
             this.nFracBits = nFracBits;

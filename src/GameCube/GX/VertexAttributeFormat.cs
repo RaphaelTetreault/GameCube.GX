@@ -5,27 +5,26 @@ namespace GameCube.GX
 
     /// <summary>
     /// What would comprise a column in GX VAT - Vertex Attribute Table
-    /// 
-    /// GX Vertex Attribute Format
     /// </summary>
+    /// <remarks>
+    /// GX Vertex Attribute Format
+    /// </remarks>
     [Serializable]
     public class VertexAttributeFormat
     {
-        // 2020-05-04 Raph: I worry this can have errors when/if someone
-        // accidentally modifies a value
-        public VertexAttribute pos;
-        public VertexAttribute nrm;
-        public VertexAttribute nbt;
-        public VertexAttribute clr0;
-        public VertexAttribute clr1;
-        public VertexAttribute tex0;
-        public VertexAttribute tex1;
-        public VertexAttribute tex2;
-        public VertexAttribute tex3;
-        public VertexAttribute tex4;
-        public VertexAttribute tex5;
-        public VertexAttribute tex6;
-        public VertexAttribute tex7;
+        public VertexAttribute pos { get; set; }
+        public VertexAttribute nrm { get; set; }
+        public VertexAttribute nbt { get; set; }
+        public VertexAttribute clr0 { get; set; }
+        public VertexAttribute clr1 { get; set; }
+        public VertexAttribute tex0 { get; set; }
+        public VertexAttribute tex1 { get; set; }
+        public VertexAttribute tex2 { get; set; }
+        public VertexAttribute tex3 { get; set; }
+        public VertexAttribute tex4 { get; set; }
+        public VertexAttribute tex5 { get; set; }
+        public VertexAttribute tex6 { get; set; }
+        public VertexAttribute tex7 { get; set; }
 
         public VertexAttribute GetAttr(Attribute attribute)
         {
@@ -50,23 +49,23 @@ namespace GameCube.GX
             }
         }
 
-        public VertexAttribute GetAttr(GXAttributes attribute)
+        public VertexAttribute GetAttr(AttributeFlags attribute)
         {
             switch (attribute)
             {
-                case GXAttributes.GX_VA_POS: return pos;
-                case GXAttributes.GX_VA_NRM: return nrm;
-                case GXAttributes.GX_VA_NBT: return nbt;
-                case GXAttributes.GX_VA_CLR0: return clr0;
-                case GXAttributes.GX_VA_CLR1: return clr1;
-                case GXAttributes.GX_VA_TEX0: return tex0;
-                case GXAttributes.GX_VA_TEX1: return tex1;
-                case GXAttributes.GX_VA_TEX2: return tex2;
-                case GXAttributes.GX_VA_TEX3: return tex3;
-                case GXAttributes.GX_VA_TEX4: return tex4;
-                case GXAttributes.GX_VA_TEX5: return tex5;
-                case GXAttributes.GX_VA_TEX6: return tex6;
-                case GXAttributes.GX_VA_TEX7: return tex7;
+                case AttributeFlags.GX_VA_POS: return pos;
+                case AttributeFlags.GX_VA_NRM: return nrm;
+                case AttributeFlags.GX_VA_NBT: return nbt;
+                case AttributeFlags.GX_VA_CLR0: return clr0;
+                case AttributeFlags.GX_VA_CLR1: return clr1;
+                case AttributeFlags.GX_VA_TEX0: return tex0;
+                case AttributeFlags.GX_VA_TEX1: return tex1;
+                case AttributeFlags.GX_VA_TEX2: return tex2;
+                case AttributeFlags.GX_VA_TEX3: return tex3;
+                case AttributeFlags.GX_VA_TEX4: return tex4;
+                case AttributeFlags.GX_VA_TEX5: return tex5;
+                case AttributeFlags.GX_VA_TEX6: return tex6;
+                case AttributeFlags.GX_VA_TEX7: return tex7;
 
                 default:
                     throw new ArgumentException();

@@ -4,7 +4,7 @@ namespace GameCube.GX
     /// Flag form of Gx.GXAttr
     /// </summary>
     [System.Flags]
-    public enum GXAttributes : uint
+    public enum AttributeFlags : uint
     {
         /// <summary>
         /// position/normal matrix index

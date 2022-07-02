@@ -15,7 +15,7 @@ namespace GameCube.GX
     {
         //
         private VertexAttributeTable vat;
-        private GXAttributes attributes;
+        private AttributeFlags attributes;
 
         //
         private DisplayCommand gxCommand;
@@ -55,13 +55,13 @@ namespace GameCube.GX
 
         public AddressRange AddressRange { get; set; }
         public VertexAttributeTable Vat { get => vat; set => vat = value; }
-        public GXAttributes Attributes { get => attributes; set => attributes = value; }
+        public AttributeFlags Attributes { get => attributes; set => attributes = value; }
         public DisplayCommand GxCommand { get => gxCommand; set => gxCommand = value; }
         //public Primitive Primitive { get => primitive; set => primitive = value; }
         //public VertexFormat VertexFormat { get => vertexFormat; set => vertexFormat = value; }
         public ushort VertexCount { get => count; set => count = value; }
 
-        public DisplayList(GXAttributes attr, VertexAttributeTable vat)
+        public DisplayList(AttributeFlags attr, VertexAttributeTable vat)
         {
             this.attributes = attr;
             this.vat = vat;
@@ -143,32 +143,32 @@ namespace GameCube.GX
                 var fmt = vat[gxCommand];
 
                 // Check each component type, see if it is used
-                bool hasPNMTXIDX = attributes.HasFlag(GXAttributes.GX_VA_PNMTXIDX);
-                bool hasTEX0MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX0MTXIDX);
-                bool hasTEX1MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX1MTXIDX);
-                bool hasTEX2MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX2MTXIDX);
-                bool hasTEX3MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX3MTXIDX);
-                bool hasTEX4MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX4MTXIDX);
-                bool hasTEX5MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX5MTXIDX);
-                bool hasTEX6MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX6MTXIDX);
-                bool hasTEX7MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX7MTXIDX);
-                bool hasPOS_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_POS_MTX_ARRAY);
-                bool hasNRM_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_NRM_MTX_ARRAY);
-                bool hasTEX_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_TEX_MTX_ARRAY);
-                bool hasLIGHT_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_LIGHT_ARRAY);
-                bool hasPOS = attributes.HasFlag(GXAttributes.GX_VA_POS);
-                bool hasNRM = attributes.HasFlag(GXAttributes.GX_VA_NRM);
-                bool hasNBT = attributes.HasFlag(GXAttributes.GX_VA_NBT);
-                bool hasCLR0 = attributes.HasFlag(GXAttributes.GX_VA_CLR0);
-                bool hasCLR1 = attributes.HasFlag(GXAttributes.GX_VA_CLR1);
-                bool hasTEX0 = attributes.HasFlag(GXAttributes.GX_VA_TEX0);
-                bool hasTEX1 = attributes.HasFlag(GXAttributes.GX_VA_TEX1);
-                bool hasTEX2 = attributes.HasFlag(GXAttributes.GX_VA_TEX2);
-                bool hasTEX3 = attributes.HasFlag(GXAttributes.GX_VA_TEX3);
-                bool hasTEX4 = attributes.HasFlag(GXAttributes.GX_VA_TEX4);
-                bool hasTEX5 = attributes.HasFlag(GXAttributes.GX_VA_TEX5);
-                bool hasTEX6 = attributes.HasFlag(GXAttributes.GX_VA_TEX6);
-                bool hasTEX7 = attributes.HasFlag(GXAttributes.GX_VA_TEX7);
+                bool hasPNMTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_PNMTXIDX);
+                bool hasTEX0MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX0MTXIDX);
+                bool hasTEX1MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX1MTXIDX);
+                bool hasTEX2MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX2MTXIDX);
+                bool hasTEX3MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX3MTXIDX);
+                bool hasTEX4MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX4MTXIDX);
+                bool hasTEX5MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX5MTXIDX);
+                bool hasTEX6MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX6MTXIDX);
+                bool hasTEX7MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX7MTXIDX);
+                bool hasPOS_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_POS_MTX_ARRAY);
+                bool hasNRM_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_NRM_MTX_ARRAY);
+                bool hasTEX_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_TEX_MTX_ARRAY);
+                bool hasLIGHT_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_LIGHT_ARRAY);
+                bool hasPOS = attributes.HasFlag(AttributeFlags.GX_VA_POS);
+                bool hasNRM = attributes.HasFlag(AttributeFlags.GX_VA_NRM);
+                bool hasNBT = attributes.HasFlag(AttributeFlags.GX_VA_NBT);
+                bool hasCLR0 = attributes.HasFlag(AttributeFlags.GX_VA_CLR0);
+                bool hasCLR1 = attributes.HasFlag(AttributeFlags.GX_VA_CLR1);
+                bool hasTEX0 = attributes.HasFlag(AttributeFlags.GX_VA_TEX0);
+                bool hasTEX1 = attributes.HasFlag(AttributeFlags.GX_VA_TEX1);
+                bool hasTEX2 = attributes.HasFlag(AttributeFlags.GX_VA_TEX2);
+                bool hasTEX3 = attributes.HasFlag(AttributeFlags.GX_VA_TEX3);
+                bool hasTEX4 = attributes.HasFlag(AttributeFlags.GX_VA_TEX4);
+                bool hasTEX5 = attributes.HasFlag(AttributeFlags.GX_VA_TEX5);
+                bool hasTEX6 = attributes.HasFlag(AttributeFlags.GX_VA_TEX6);
+                bool hasTEX7 = attributes.HasFlag(AttributeFlags.GX_VA_TEX7);
 
                 // INITIALIZE ARRAYS
                 // Currently unsupported. TEX#MTXIDX should work but is untested.
@@ -240,32 +240,32 @@ namespace GameCube.GX
             attributes = ComponentsToGXAttributes();
 
             // Check each component type, see if it is used
-            bool hasPNMTXIDX = attributes.HasFlag(GXAttributes.GX_VA_PNMTXIDX);
-            bool hasTEX0MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX0MTXIDX);
-            bool hasTEX1MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX1MTXIDX);
-            bool hasTEX2MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX2MTXIDX);
-            bool hasTEX3MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX3MTXIDX);
-            bool hasTEX4MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX4MTXIDX);
-            bool hasTEX5MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX5MTXIDX);
-            bool hasTEX6MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX6MTXIDX);
-            bool hasTEX7MTXIDX = attributes.HasFlag(GXAttributes.GX_VA_TEX7MTXIDX);
-            bool hasPOS_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_POS_MTX_ARRAY);
-            bool hasNRM_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_NRM_MTX_ARRAY);
-            bool hasTEX_MTX_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_TEX_MTX_ARRAY);
-            bool hasLIGHT_ARRAY = attributes.HasFlag(GXAttributes.GX_VA_LIGHT_ARRAY);
-            bool hasPOS = attributes.HasFlag(GXAttributes.GX_VA_POS);
-            bool hasNRM = attributes.HasFlag(GXAttributes.GX_VA_NRM);
-            bool hasNBT = attributes.HasFlag(GXAttributes.GX_VA_NBT);
-            bool hasCLR0 = attributes.HasFlag(GXAttributes.GX_VA_CLR0);
-            bool hasCLR1 = attributes.HasFlag(GXAttributes.GX_VA_CLR1);
-            bool hasTEX0 = attributes.HasFlag(GXAttributes.GX_VA_TEX0);
-            bool hasTEX1 = attributes.HasFlag(GXAttributes.GX_VA_TEX1);
-            bool hasTEX2 = attributes.HasFlag(GXAttributes.GX_VA_TEX2);
-            bool hasTEX3 = attributes.HasFlag(GXAttributes.GX_VA_TEX3);
-            bool hasTEX4 = attributes.HasFlag(GXAttributes.GX_VA_TEX4);
-            bool hasTEX5 = attributes.HasFlag(GXAttributes.GX_VA_TEX5);
-            bool hasTEX6 = attributes.HasFlag(GXAttributes.GX_VA_TEX6);
-            bool hasTEX7 = attributes.HasFlag(GXAttributes.GX_VA_TEX7);
+            bool hasPNMTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_PNMTXIDX);
+            bool hasTEX0MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX0MTXIDX);
+            bool hasTEX1MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX1MTXIDX);
+            bool hasTEX2MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX2MTXIDX);
+            bool hasTEX3MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX3MTXIDX);
+            bool hasTEX4MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX4MTXIDX);
+            bool hasTEX5MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX5MTXIDX);
+            bool hasTEX6MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX6MTXIDX);
+            bool hasTEX7MTXIDX = attributes.HasFlag(AttributeFlags.GX_VA_TEX7MTXIDX);
+            bool hasPOS_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_POS_MTX_ARRAY);
+            bool hasNRM_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_NRM_MTX_ARRAY);
+            bool hasTEX_MTX_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_TEX_MTX_ARRAY);
+            bool hasLIGHT_ARRAY = attributes.HasFlag(AttributeFlags.GX_VA_LIGHT_ARRAY);
+            bool hasPOS = attributes.HasFlag(AttributeFlags.GX_VA_POS);
+            bool hasNRM = attributes.HasFlag(AttributeFlags.GX_VA_NRM);
+            bool hasNBT = attributes.HasFlag(AttributeFlags.GX_VA_NBT);
+            bool hasCLR0 = attributes.HasFlag(AttributeFlags.GX_VA_CLR0);
+            bool hasCLR1 = attributes.HasFlag(AttributeFlags.GX_VA_CLR1);
+            bool hasTEX0 = attributes.HasFlag(AttributeFlags.GX_VA_TEX0);
+            bool hasTEX1 = attributes.HasFlag(AttributeFlags.GX_VA_TEX1);
+            bool hasTEX2 = attributes.HasFlag(AttributeFlags.GX_VA_TEX2);
+            bool hasTEX3 = attributes.HasFlag(AttributeFlags.GX_VA_TEX3);
+            bool hasTEX4 = attributes.HasFlag(AttributeFlags.GX_VA_TEX4);
+            bool hasTEX5 = attributes.HasFlag(AttributeFlags.GX_VA_TEX5);
+            bool hasTEX6 = attributes.HasFlag(AttributeFlags.GX_VA_TEX6);
+            bool hasTEX7 = attributes.HasFlag(AttributeFlags.GX_VA_TEX7);
 
             var fmt = vat[gxCommand];
 
@@ -310,35 +310,35 @@ namespace GameCube.GX
         }
 
 
-        public GXAttributes ComponentsToGXAttributes()
+        public AttributeFlags ComponentsToGXAttributes()
         {
-            GXAttributes attributes = 0;
-            if (!pn_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_PNMTXIDX;
-            if (!tex0_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX0MTXIDX;
-            if (!tex1_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX1MTXIDX;
-            if (!tex2_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX2MTXIDX;
-            if (!tex3_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX3MTXIDX;
-            if (!tex4_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX4MTXIDX;
-            if (!tex5_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX5MTXIDX;
-            if (!tex6_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX6MTXIDX;
-            if (!tex7_mtx_idx.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX7MTXIDX;
+            AttributeFlags attributes = 0;
+            if (!pn_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_PNMTXIDX;
+            if (!tex0_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX0MTXIDX;
+            if (!tex1_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX1MTXIDX;
+            if (!tex2_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX2MTXIDX;
+            if (!tex3_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX3MTXIDX;
+            if (!tex4_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX4MTXIDX;
+            if (!tex5_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX5MTXIDX;
+            if (!tex6_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX6MTXIDX;
+            if (!tex7_mtx_idx.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX7MTXIDX;
             //if ( .IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_POS_MTX_ARRAY;
             //if ( .IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_NRM_MTX_ARRAY;
             //if ( .IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX_MTX_ARRAY;
             //if ( .IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_LIGHT_ARRAY;
-            if (!pos.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_POS;
-            /**/ if (!bnm.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_NBT; // NBT if bnm or tan are non-zero length
-            else if (!nrm.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_NRM; // Otherwise, check if nrm is non-zero length
-            if (!clr0.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_CLR0;
-            if (!clr1.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_CLR1;
-            if (!tex0.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX0;
-            if (!tex1.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX1;
-            if (!tex2.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX2;
-            if (!tex3.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX3;
-            if (!tex4.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX4;
-            if (!tex5.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX5;
-            if (!tex6.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX6;
-            if (!tex7.IsNullOrEmpty()) attributes |= GXAttributes.GX_VA_TEX7;
+            if (!pos.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_POS;
+            /**/ if (!bnm.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_NBT; // NBT if bnm or tan are non-zero length
+            else if (!nrm.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_NRM; // Otherwise, check if nrm is non-zero length
+            if (!clr0.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_CLR0;
+            if (!clr1.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_CLR1;
+            if (!tex0.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX0;
+            if (!tex1.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX1;
+            if (!tex2.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX2;
+            if (!tex3.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX3;
+            if (!tex4.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX4;
+            if (!tex5.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX5;
+            if (!tex6.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX6;
+            if (!tex7.IsNullOrEmpty()) attributes |= AttributeFlags.GX_VA_TEX7;
 
             return attributes;
         }
