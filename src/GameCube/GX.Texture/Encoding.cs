@@ -22,6 +22,7 @@ namespace GameCube.GX.Texture
         public abstract bool IsDirect { get; }
         public abstract bool IsIndirect { get; }
         public abstract TextureFormat Format { get; }
+        public abstract int BytesPerBlock { get; }
 
         public abstract Block ReadBlock(EndianBinaryReader reader);
         public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksWidth, int blocksHeight, Encoding encoding)

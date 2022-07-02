@@ -89,7 +89,7 @@ namespace GameCube.GX.Texture
         }
 
 
-        private TextureColor[] GetCmprPalette(ushort c0, ushort c1)
+        public static TextureColor[] GetCmprPalette(ushort c0, ushort c1)
         {
             var colors = new TextureColor[4];
             colors[0] = TextureColor.FromRGB565(c0);
@@ -107,7 +107,7 @@ namespace GameCube.GX.Texture
             return colors;
         }
 
-        private byte[] UnpackIndexes(uint indexesPacked)
+        public static byte[] UnpackIndexes(uint indexesPacked)
         {
             byte[] indexes = new byte[4*4];
             for (int i = 0; i < indexes.Length; i++)

@@ -158,5 +158,21 @@ namespace GameCube.GX.Texture
             return texture;
         }
 
+        public static Texture Crop(Texture texture, int pixelWidth, int PixelHeight)
+        {
+            var cropped = new Texture(pixelWidth, PixelHeight, texture.Format);
+            cropped.Blocks = texture.Blocks;
+
+            for (int y = 0; y < cropped.Height; y++)
+            {
+                for (int x = 0; x < cropped.Width; x++)
+                {
+                    cropped[x, y] = texture[x, y];
+                }
+            }
+
+            return cropped;
+        }
+
     }
 }

@@ -16,7 +16,9 @@ namespace GameCube.GX.Texture
             var block = new IndirectBlock(BlockWidth, BlockHeight, Format);
             for (int i = 0; i < block.Indexes.Length; i++)
             {
-                block.Indexes[i] = reader.ReadUInt16();
+                ushort index16 = reader.ReadUInt16();
+                ushort index14 = (ushort)(index16 & 0b_00111111_11111111);
+                block.Indexes[i] = index14;
             }
             return block;
         }
