@@ -1,4 +1,5 @@
 ﻿using Manifold.IO;
+using Unity.Mathematics;
 
 namespace GameCube.GX.Texture
 {
@@ -29,6 +30,12 @@ namespace GameCube.GX.Texture
             where TBlock : Block
         {
             int blocksCount = blocksWidth * blocksHeight;
+            var blocks = ReadBlocks<TBlock>(reader, blocksCount, encoding);
+            return blocks;
+        }
+        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksCount, Encoding encoding)
+            where TBlock : Block
+        {
             var blocks = new TBlock[blocksCount];
             for (int i = 0; i < blocksCount; i++)
                 blocks[i] = encoding.ReadBlock(reader) as TBlock;
@@ -69,6 +76,17 @@ namespace GameCube.GX.Texture
                 case TextureFormat.CMPR: return EncodingCMPR;
                 default: throw new System.Exception($"Unhandled texture format {textureFormat}.");
             }
+        }
+
+        public int GetTotalBlocksToEncode(int widthPixels, int heightPixels)
+            => GetTotalBlocksToEncode(widthPixels, heightPixels, BlockWidth, BlockHeight);
+
+        public static int GetTotalBlocksToEncode(int widthPixels, int heightPixels, int blockWidth, int blockHeight)
+        {
+            int nBlocksWidth = (int)math.ceil(widthPixels / (float)blockWidth);
+            int nBlocksHeight = (int)math.ceil(heightPixels / (float)blockHeight);
+            int totalBlocks = nBlocksWidth * nBlocksHeight;
+            return totalBlocks;
         }
 
     }

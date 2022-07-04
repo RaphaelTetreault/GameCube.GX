@@ -39,7 +39,13 @@ namespace GameCube.GX.Texture
             Height = height;
             Pixels = new TextureColor[Width * Height];
         }
-
+        public Texture(int width, int height, TextureColor color, TextureFormat format = TextureFormat.RGBA8)
+            : this(width, height, format)
+        {
+            // Set all colors as default
+            for (int i = 0; i < Pixels.Length; i++)
+                Pixels[i] = color;
+        }
 
         public static Texture FromColors(TextureColor[] colors, int width, int height)
         {
@@ -65,15 +71,12 @@ namespace GameCube.GX.Texture
         {
             int subBlockWidth = directBlocks[0].Width;
             int subBlockHeight = directBlocks[0].Height;
-            int pixelsCount = blocksWidth * blocksHeight * subBlockWidth * subBlockHeight;
-            var texture = new Texture
-            {
-                Format = directBlocks[0].Format,
-                Width = blocksWidth * subBlockWidth,
-                Height = blocksHeight * subBlockHeight,
-                Pixels = new TextureColor[pixelsCount],
-                Blocks = directBlocks,
-            };
+            var format = directBlocks[0].Format;
+
+            int pixelsWidth = blocksWidth * subBlockWidth;
+            int pixelsHeight = blocksHeight * subBlockHeight;
+            var texture = new Texture(pixelsWidth, pixelsHeight, format);
+            texture.Blocks = directBlocks;
 
             int pixelIndex = 0;
             // Linearize texture pixels
@@ -98,6 +101,8 @@ namespace GameCube.GX.Texture
             }
             return texture;
         }
+
+
 
         public static Texture FromIndexBlocksAndPalette(IndirectBlock[] indirectBlocks, int blocksWidth, int blocksHeight, Palette palette)
         {
