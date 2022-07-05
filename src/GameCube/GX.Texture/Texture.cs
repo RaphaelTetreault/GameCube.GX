@@ -8,6 +8,7 @@ namespace GameCube.GX.Texture
     /// <remarks>
     /// Invaluable resource: <see href="https://wiki.tockdom.com/wiki/Image_Formats"></see>
     /// </remarks>
+    [Serializable]
     public class Texture
     {
         public TextureFormat Format { get; set; }
@@ -40,8 +41,12 @@ namespace GameCube.GX.Texture
             Pixels = new TextureColor[Width * Height];
         }
         public Texture(int width, int height, TextureColor color, TextureFormat format = TextureFormat.RGBA8)
-            : this(width, height, format)
         {
+            Format = format;
+            Width = width;
+            Height = height;
+            Pixels = new TextureColor[Width * Height];
+
             // Set all colors as default
             for (int i = 0; i < Pixels.Length; i++)
                 Pixels[i] = color;

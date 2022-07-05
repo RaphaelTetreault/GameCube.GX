@@ -1,8 +1,8 @@
-﻿using Manifold.IO;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace GameCube.GX.Texture
 {
+    [System.Serializable]
     [StructLayout(LayoutKind.Explicit)]
     public struct TextureColor
     {

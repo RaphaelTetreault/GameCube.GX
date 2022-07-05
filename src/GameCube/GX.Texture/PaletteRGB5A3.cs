@@ -2,6 +2,7 @@
 
 namespace GameCube.GX.Texture
 {
+    [System.Serializable]
     public sealed class PaletteRGB5A3 : Palette
     {
         public override TextureFormat Format => TextureFormat.RGB5A3;

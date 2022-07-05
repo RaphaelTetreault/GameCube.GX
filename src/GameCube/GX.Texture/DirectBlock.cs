@@ -1,5 +1,6 @@
 ﻿namespace GameCube.GX.Texture
 {
+    [System.Serializable]
     public sealed class DirectBlock : Block
     {
         public TextureColor[] Colors { get; set; }

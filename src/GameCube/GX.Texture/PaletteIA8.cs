@@ -2,6 +2,7 @@
 
 namespace GameCube.GX.Texture
 {
+    [System.Serializable]
     public sealed class PaletteIA8 : Palette
     {
         public override TextureFormat Format => TextureFormat.IA8;
