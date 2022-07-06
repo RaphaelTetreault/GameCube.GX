@@ -48,14 +48,14 @@ namespace GameCube.GX.Texture
                 (b * 0.11f));
         }
 
-        public static TextureColor Mix(TextureColor c0, TextureColor c1, float time01)
+        public static TextureColor Lerp(TextureColor c0, TextureColor c1, float time01)
         {
             bool isTimeValid = time01 >= 0f && time01 <= 1f;
             if (!isTimeValid)
                 throw new System.Exception($"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive). Value was: {time01}.");
 
-            float timeC0 = time01;
-            float timeC1 = 1f - time01;
+            float timeC0 = 1f - time01;
+            float timeC1 = time01;
             float r = c0.r * timeC0 + c1.r * timeC1;
             float g = c0.g * timeC0 + c1.g * timeC1;
             float b = c0.b * timeC0 + c1.b * timeC1;

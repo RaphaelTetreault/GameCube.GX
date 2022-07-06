@@ -96,12 +96,12 @@ namespace GameCube.GX.Texture
             colors[1] = TextureColor.FromRGB565(c1);
             if (c0 > c1)
             {
-                colors[2] = TextureColor.Mix(colors[0], colors[1], 2f/3f);
-                colors[3] = TextureColor.Mix(colors[0], colors[1], 1f/3f);
+                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f/3f);
+                colors[3] = TextureColor.Lerp(colors[0], colors[1], 2f/3f);
             }
             else
             {
-                colors[2] = TextureColor.Mix(colors[0], colors[1], 1f/2f);
+                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f/2f);
                 colors[3] = new TextureColor(0x00000000);
             }
             return colors;
