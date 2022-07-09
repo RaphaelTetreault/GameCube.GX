@@ -28,7 +28,22 @@ namespace GameCube.GX
             r = g = b = a = 0;
             this.componentType = componentType;
         }
-
+        public GXColor(byte r, byte g, byte b, byte a, ComponentType componentType)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+            this.componentType = componentType;
+        }
+        public GXColor(uint raw, ComponentType componentType) : this(raw)
+        {
+            this.componentType = componentType;
+        }
+        public GXColor(int raw, ComponentType componentType) : this(raw)
+        {
+            this.componentType = componentType;
+        }
         public GXColor(int raw)
         {
             r = (byte)((raw >> 24) & 0b11111111);
