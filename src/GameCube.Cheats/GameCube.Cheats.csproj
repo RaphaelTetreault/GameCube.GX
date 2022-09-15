@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Manifold.Core\src\Manifold.IO\Manifold.IO.csproj" />
-    <ProjectReference Include="..\..\..\..\Manifold.Core\src\Manifold\Manifold.csproj" />
+    <ProjectReference Include="..\..\..\Manifold.Core\src\Manifold.IO\Manifold.IO.csproj" />
+    <ProjectReference Include="..\..\..\Manifold.Core\src\Manifold\Manifold.csproj" />
   </ItemGroup>
 
 </Project>
