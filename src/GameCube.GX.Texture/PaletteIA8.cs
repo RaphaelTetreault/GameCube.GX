@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Palette for '8-bit intensity and 8-bit alpha' indirect colour textures.
+    /// </summary>
     [System.Serializable]
     public sealed class PaletteIA8 : Palette
     {

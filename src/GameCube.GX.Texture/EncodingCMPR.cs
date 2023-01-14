@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Encoding format for 'compressed' (DXT1) texture.
+    /// </summary>
     public sealed class EncodingCMPR : DirectEncoding
     {
         public override byte BlockWidth => 8;
@@ -14,7 +17,7 @@ namespace GameCube.GX.Texture
         {
             var block = new DirectBlock(BlockWidth, BlockHeight, Format);
 
-            // CMPR 8x8 is split into 2x2, ie quadrants
+            // CMPR 8x8 is split into 2x2, ie quadrants of 4x4
             for (int qy = 0; qy < 2; qy++)
             {
                 for (int qx = 0; qx < 2; qx++)
@@ -22,7 +25,7 @@ namespace GameCube.GX.Texture
                     // Each subdivision is 4x4 with 2 leading RGB565 colors
                     ushort c0 = reader.ReadUInt16();
                     ushort c1 = reader.ReadUInt16();
-                    var palette = GetCmprPalette(c0, c1);
+                    TextureColor[] palette = GetCmprPalette(c0, c1);
                     // Then followed by 2-bit indexes packed into 32-bits
                     uint indexesPacked = reader.ReadUInt32();
                     byte[] indexes = UnpackIndexes(indexesPacked);
@@ -30,8 +33,10 @@ namespace GameCube.GX.Texture
                     // Now that we have the data, get colors for each index
                     // and place it in the direct color block
 
-                    // 2x2 mapped to 8x8: this index is the first for each quadrant
-                    int quadrantIndex2x2 = qx * 4 + qy * 32; 
+                    // We must get the first index of the 2x2 grid for the pixel in the larger 8x8 grid.
+                    // The following math gets the first pixel index for the quadrant.
+                    int quadrantIndex2x2 = qx * 4 + qy * 32;
+                    // Then we can iterate over the 4x4 subset.
                     for (int y = 0; y < 4; y++)
                     {
                         for (int x = 0; x < 4; x++)
@@ -62,7 +67,8 @@ namespace GameCube.GX.Texture
                 {
                     // Get colors
                     var colors4x4 = new TextureColor[4*4];
-                    int quadrantBaseIndex = qy * 32 + qx * 4; // 2x2 mapped to 8x8
+                    // The following math gets the first pixel index for the quadrant.
+                    int quadrantBaseIndex = qy * 32 + qx * 4;
                     for (int y = 0; y < 4; y++)
                     {
                         for (int x = 0; x < 4; x++)

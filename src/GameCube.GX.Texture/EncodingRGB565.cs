@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Encoding format for '5-bit red, 6-bit green, and 5-bit blue' colour texture.
+    /// </summary>
     public sealed class EncodingRGB565 : DirectEncoding
     {
         public override byte BlockWidth => 4;

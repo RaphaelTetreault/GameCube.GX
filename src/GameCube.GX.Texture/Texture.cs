@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// 
+    /// A GameCube GX texture.
     /// </summary>
     /// <remarks>
     /// Invaluable resource: <see href="https://wiki.tockdom.com/wiki/Image_Formats"></see>
@@ -11,12 +11,42 @@ namespace GameCube.GX.Texture
     [Serializable]
     public class Texture
     {
+        /// <summary>
+        /// The texture's format.
+        /// </summary>
         public TextureFormat Format { get; set; }
+
+        /// <summary>
+        /// The texture's pixel width.
+        /// </summary>
         public int Width { get; private set; }
+
+        /// <summary>
+        /// The texture's pixel height.
+        /// </summary>
         public int Height { get; private set; }
+
+        /// <summary>
+        /// The texture's pixels.
+        /// </summary>
+        /// <remarks>
+        /// Organized horizontally left-to-right with subsequent rows stacked vertically.
+        /// </remarks>
         public TextureColor[] Pixels { get; private set; }
+
+        /// <summary>
+        /// The texture's colour pallete, if texture uses a colour-indexed texture format.
+        /// </summary>
         public Palette Palette { get; private set; }
+
+        /// <summary>
+        /// The texture's blocks.
+        /// </summary>
         public Block[] Blocks { get; private set; }
+
+        /// <summary>
+        /// True if the texture's palette is not null.
+        /// </summary>
         public bool IsPaletted => Palette is not null;
 
 
@@ -137,7 +167,7 @@ namespace GameCube.GX.Texture
                         {
                             int subBlockIndex = y * subBlockWidth + x;
                             var indirectBlock = indirectBlocks[blockIndex];
-                            var indirectIndex = indirectBlock.Indexes[subBlockIndex];
+                            var indirectIndex = indirectBlock.ColorIndexes[subBlockIndex];
                             var color = palette.Colors[indirectIndex];
                             texture.Pixels[pixelIndex++] = color;
                         }

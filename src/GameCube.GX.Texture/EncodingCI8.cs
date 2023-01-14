@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Encoding format for '8-bit colour-indexed' texture.
+    /// </summary>
     public sealed class EncodingCI8 : IndirectEncoding
     {
         public override byte BlockWidth => 8;
@@ -14,9 +17,9 @@ namespace GameCube.GX.Texture
         public override Block ReadBlock(EndianBinaryReader reader)
         {
             var block = new IndirectBlock(BlockWidth, BlockHeight, Format);
-            for (int i = 0; i < block.Indexes.Length; i++)
+            for (int i = 0; i < block.ColorIndexes.Length; i++)
             {
-                block.Indexes[i] = reader.ReadByte();
+                block.ColorIndexes[i] = reader.ReadByte();
             }
             return block;
         }
@@ -24,7 +27,7 @@ namespace GameCube.GX.Texture
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
             var indirectBlock = block as IndirectBlock;
-            foreach (var index in indirectBlock.Indexes)
+            foreach (var index in indirectBlock.ColorIndexes)
             {
                 byte index8 = checked((byte)index);
                 writer.Write(index8);

@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Represents a pixel's colour within a GameCube texture.
+    /// </summary>
     [System.Serializable]
     [StructLayout(LayoutKind.Explicit)]
     public struct TextureColor
@@ -52,7 +55,10 @@ namespace GameCube.GX.Texture
         {
             bool isTimeValid = time01 >= 0f && time01 <= 1f;
             if (!isTimeValid)
-                throw new System.Exception($"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive). Value was: {time01}.");
+            {
+                string msg = $"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive). Value was: {time01}.";
+                throw new System.Exception(msg);
+            }
 
             float timeC0 = 1f - time01;
             float timeC1 = time01;
@@ -144,11 +150,12 @@ namespace GameCube.GX.Texture
             bool isVeryOpaque = (c.a >> 4) > 0b_0000_0111;
             if (isVeryOpaque)
             {
-                // a is const 1 in bit position 15, 0x8000
+                // Opaque alpha 'a' is const 1 in bit position 15, 0x8000
+                const ushort opaque = 0x8000;
                 r = (byte)((c.r >> 3) & 0b_0001_1111); // 5 bits
                 g = (byte)((c.g >> 3) & 0b_0001_1111); // 5 bits
                 b = (byte)((c.b >> 3) & 0b_0001_1111); // 5 bits
-                rgb5a3 = (ushort)(0x8000 + r << 10 + g << 5 + b << 0);
+                rgb5a3 = (ushort)(opaque + r << 10 + g << 5 + b << 0);
             }
             else
             {

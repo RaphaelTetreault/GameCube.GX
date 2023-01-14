@@ -2,6 +2,9 @@
 
 namespace GameCube.GX.Texture
 {
+    /// <summary>
+    /// Encoding format for '4-bit colour-indexed' texture.
+    /// </summary>
     public sealed class EncodingCI4 : IndirectEncoding
     {
         public override byte BlockWidth => 8;
@@ -14,16 +17,16 @@ namespace GameCube.GX.Texture
         public override Block ReadBlock(EndianBinaryReader reader)
         {
             var block = new IndirectBlock(BlockWidth, BlockHeight, Format);
-            Assert.IsTrue(block.Indexes.Length % 2 == 0);
+            Assert.IsTrue(block.ColorIndexes.Length % 2 == 0);
 
             // process 2 indexes at a time
-            for (int i = 0; i < block.Indexes.Length; i += 2)
+            for (int i = 0; i < block.ColorIndexes.Length; i += 2)
             {
                 byte indexes01 = reader.ReadByte();
                 byte index0 = (byte)((indexes01 >> 4) & 0b_0000_1111);
                 byte index1 = (byte)((indexes01 >> 0) & 0b_0000_1111);
-                block.Indexes[i + 0] = index0;
-                block.Indexes[i + 1] = index1;
+                block.ColorIndexes[i + 0] = index0;
+                block.ColorIndexes[i + 1] = index1;
             }
             return block;
         }
@@ -31,10 +34,10 @@ namespace GameCube.GX.Texture
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
             var indirectBlock = block as IndirectBlock;
-            Assert.IsTrue(indirectBlock.Indexes.Length % 2 == 0);
+            Assert.IsTrue(indirectBlock.ColorIndexes.Length % 2 == 0);
 
             // Process 2 indexes at a time
-            for (int i = 0; i < indirectBlock.Indexes.Length; i += 2)
+            for (int i = 0; i < indirectBlock.ColorIndexes.Length; i += 2)
             {
                 byte index0 = checked((byte)(i));
                 byte index1 = checked((byte)(index0 + 1));
