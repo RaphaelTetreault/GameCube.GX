@@ -1,32 +1,64 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Represents a pixel's colour within a GameCube texture.
+    ///     Represents a pixel's colour within a GameCube texture.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     [StructLayout(LayoutKind.Explicit)]
     public struct TextureColor
     {
+        /// <summary>
+        ///     Raw colour in RGBA format.
+        /// </summary>
         [FieldOffset(0x00)] public uint raw;
+        /// <summary>
+        ///     Red component.
+        /// </summary>
         [FieldOffset(0x00)] public byte r;
+        /// <summary>
+        ///     Green component.
+        /// </summary>
         [FieldOffset(0x01)] public byte g;
+        /// <summary>
+        ///     Blue component.
+        /// </summary>
         [FieldOffset(0x02)] public byte b;
+        /// <summary>
+        ///     Alpha component.
+        /// </summary>
         [FieldOffset(0x03)] public byte a;
 
+        /// <summary>
+        ///     Create a new colour from <paramref name="raw"/> colour RGBA data.
+        /// </summary>
+        /// <param name="raw">Raw color in RGBA format.</param>
         public TextureColor(int raw)
         {
             r = g = b = a = 0;
             this.raw = (uint)raw;
         }
 
+        /// <summary>
+        ///     Create a new colour from <paramref name="raw"/> colour RGBA data.
+        /// </summary>
+        /// <param name="raw">Raw color in RGBA format.</param>
         public TextureColor(uint raw)
         {
             r = g = b = a = 0;
             this.raw = raw;
         }
 
+        /// <summary>
+        ///     Create a new colour from the supplied <paramref name="r"/>, <paramref name="g"/>, 
+        ///     <paramref name="b"/>, and <paramref name="a"/> values.
+        /// </summary>
+        /// <param name="r">8-bit red color component.</param>
+        /// <param name="g">8-bit green color component.</param>
+        /// <param name="b">8-bit blue color component.</param>
+        /// <param name="a">8-bit alpha component.</param>
         public TextureColor(byte r, byte g, byte b, byte a = 0xFF)
         {
             raw = 0;
@@ -36,6 +68,12 @@ namespace GameCube.GX.Texture
             this.a = a;
         }
 
+        /// <summary>
+        ///     Create a new grayscale colour from the supplied <paramref name="intensity"/>
+        ///     and <paramref name="a"/> values.
+        /// </summary>
+        /// <param name="intensity">8-bit intensity (grayscale) value.</param>
+        /// <param name="a">8-bit alpha component.</param>
         public TextureColor(byte intensity, byte a = 0xFF)
         {
             raw = 0;
@@ -43,6 +81,12 @@ namespace GameCube.GX.Texture
             this.a = a;
         }
 
+        /// <summary>
+        ///     Get this colour's grayscale value.
+        /// </summary>
+        /// <returns>
+        ///     Returns the 8-bit grayscale value of this colour.
+        /// </returns>
         public byte GetIntensity()
         {
             return (byte)(
@@ -51,13 +95,26 @@ namespace GameCube.GX.Texture
                 (b * 0.11f));
         }
 
+        /// <summary>
+        ///     Create a new colour by linearly interpolating between <paramref name="c0"/> and <paramref name="c1"/>
+        ///     at the specified intermediate point <paramref name="time01"/>.
+        /// </summary>
+        /// <param name="c0">Colour 0.</param>
+        /// <param name="c1">Colour 1.</param>
+        /// <param name="time01">The interpolation time between <paramref name="c0"/> (t=0) and <paramref name="c1"/> (t=1).</param>
+        /// <returns>
+        ///     Returns a new colour derived from interpolating between <paramref name="c0"/> and <paramref name="c1"/> at <paramref name="time01"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        ///     Thrown if <paramref name="time01"/> is not between 0f and 1f (inclusive at both ends).
+        /// </exception>
         public static TextureColor Lerp(TextureColor c0, TextureColor c1, float time01)
         {
             bool isTimeValid = time01 >= 0f && time01 <= 1f;
             if (!isTimeValid)
             {
                 string msg = $"Argument `{nameof(time01)}` must be between 0 and 1 (inclusive). Value was: {time01}.";
-                throw new System.Exception(msg);
+                throw new ArgumentException(msg);
             }
 
             float timeC0 = 1f - time01;
@@ -70,7 +127,13 @@ namespace GameCube.GX.Texture
             return color;
         }
 
-
+        /// <summary>
+        ///     Convert GameCube IA4 value into colour.
+        /// </summary>
+        /// <param name="ia4">The 8-bit IA4 colour.</param>
+        /// <returns>
+        ///     A 32-bit colour representing the <paramref name="ia4"/> value.
+        /// </returns>
         public static TextureColor FromIA4(byte ia4)
         {
             byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) * ((1 << 4) + 1));
@@ -78,15 +141,29 @@ namespace GameCube.GX.Texture
             var color = new TextureColor(i, a);
             return color;
         }
+        /// <summary>
+        ///     Convert colour into GameCube IA4 value.
+        /// </summary>
+        /// <param name="c">Colour.</param>
+        /// <returns>
+        ///     An 8-bit value representing colour <paramref name="c"/> in IA4 format.
+        /// </returns>
         public static byte ToIA4(TextureColor c)
         {
             byte i = c.GetIntensity();
             byte i4 = (byte)(i >> 4);
             byte a4 = (byte)(c.a >> 4);
-            byte ia8 = (byte)(i4 << 4 + a4 << 0);
-            return ia8;
+            byte ia4 = (byte)(i4 << 4 + a4 << 0);
+            return ia4;
         }
 
+        /// <summary>
+        ///     Convert GameCube IA8 value into colour.
+        /// </summary>
+        /// <param name="ia8">The 16-bit IA8 value.</param>
+        /// <returns>
+        ///     A 32-bit colour representing the <paramref name="ia8"/> value.
+        /// </returns>
         public static TextureColor FromIA8(ushort ia8)
         {
             byte i = (byte)((ia8 >> 8) & 0b_1111_1111);
@@ -94,6 +171,13 @@ namespace GameCube.GX.Texture
             var color = new TextureColor(i, a);
             return color;
         }
+        /// <summary>
+        ///     Convert colour into GameCube IA8 value.
+        /// </summary>
+        /// <param name="c">Colour.</param>
+        /// <returns>
+        ///     A 16-bit value representing colour <paramref name="c"/> in IA8 format.
+        /// </returns>
         public static ushort ToIA8(TextureColor c)
         {
             byte i = c.GetIntensity();
@@ -102,6 +186,13 @@ namespace GameCube.GX.Texture
             return ia8;
         }
 
+        /// <summary>
+        ///     Convert GameCube RGB565 value into colour.
+        /// </summary>
+        /// <param name="rgb565">The 16-bit RGB565 value.</param>
+        /// <returns>
+        ///     A 32-bit colour representing the <paramref name="rgb565"/> value.
+        /// </returns>
         public static TextureColor FromRGB565(ushort rgb565)
         {
             byte r = (byte)(((rgb565 >> 11) & (0b_0001_1111)) * (1 << 3));
@@ -110,6 +201,13 @@ namespace GameCube.GX.Texture
             var color = new TextureColor(r, g, b);
             return color;
         }
+        /// <summary>
+        ///     Convert colour into GameCube RGB565 value.
+        /// </summary>
+        /// <param name="c">Colour.</param>
+        /// <returns>
+        ///     A 16-bit value representing colour <paramref name="c"/> in RGB565 format.
+        /// </returns>
         public static ushort ToRGB565(TextureColor c)
         {
             byte r5 = (byte)((c.r >> 3) & 0b_0001_1111);
@@ -119,6 +217,13 @@ namespace GameCube.GX.Texture
             return rgb565;
         }
 
+        /// <summary>
+        ///     Convert GameCube RGB5A3 value into colour.
+        /// </summary>
+        /// <param name="rgb5a3">The 16-bit RGB5A3 value.</param>
+        /// <returns>
+        ///     A 32-bit colour representing the <paramref name="rgb5a3"/> value.
+        /// </returns>
         public static TextureColor FromRGB5A3(ushort rgb5a3)
         {
             byte r, g, b, a;
@@ -140,6 +245,13 @@ namespace GameCube.GX.Texture
             var color = new TextureColor(r, g, b, a);
             return color;
         }
+        /// <summary>
+        ///     Convert colour into GameCube RGB5A3 value.
+        /// </summary>
+        /// <param name="c">Colour.</param>
+        /// <returns>
+        ///     A 16-bit value representing colour <paramref name="c"/> in RGB5A3 format.
+        /// </returns>
         public static ushort ToRGB5A3(TextureColor c)
         {
             byte r, g, b, a;

@@ -14,7 +14,7 @@
         /// <summary>
         /// Indexer to get/set direct colour (pixel).
         /// </summary>
-        /// <param name="i">The pixel's indirect colour index.</param>
+        /// <param name="i">The pixel's direct colour index in this block.</param>
         /// <returns>Direct colour (pixel) at the specified index within this block.</returns>
         public TextureColor this[int i] { get => Colors[i]; set => Colors[i] = value; }
 
