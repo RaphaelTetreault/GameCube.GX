@@ -60,7 +60,7 @@ namespace GameCube.GX.Texture
         {
             var colorBlock = block as DirectBlock;
 
-            // CMPR 8x8 is split into 2x2, ie quadrants
+            // CMPR 8x8 is split into 2x2 quadrants of 4x4 pixels
             for (int qy = 0; qy < 2; qy++)
             {
                 for (int qx = 0; qx < 2; qx++)
@@ -68,28 +68,23 @@ namespace GameCube.GX.Texture
                     // Get colors
                     var colors4x4 = new TextureColor[4*4];
                     // The following math gets the first pixel index for the quadrant.
-                    int quadrantBaseIndex = qy * 32 + qx * 4;
+                    int quadrantBaseIndex = qx * 4 + qy * 32 ;
                     for (int y = 0; y < 4; y++)
                     {
                         for (int x = 0; x < 4; x++)
                         {
-                            int subdivisionIndex = y * 4 + x; // 4x4
-                            int blockColorIndex = quadrantBaseIndex + subdivisionIndex; // true 8x8 index
-                            colors4x4[subdivisionIndex] = colorBlock.Colors[blockColorIndex];
+                            int blockIndex4x4 = x + (y * 4); // 4x4
+                            int blockIndex8x8 = x + (y * 8) + quadrantBaseIndex; // true 8x8 index
+                            colors4x4[blockIndex4x4] = colorBlock.Colors[blockIndex8x8];
                         }
                     }
-                    // pass to DTX compressor
-                    ushort c0 = 0xDEAD;
-                    ushort c1 = 0xBEEF;
-                    uint indexesPacked = 0xF0F0F0F0;
 
+                    // Get color palette and indexes from compressor
+                    DXT1.FastBadRmsCmprColors(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
                     // write block
                     writer.Write(c0);
                     writer.Write(c1);
                     writer.Write(indexesPacked);
-
-                    // TODO: actually implement DTX compresion :S
-                    throw new System.NotImplementedException();
                 }
             }
         }
@@ -118,11 +113,29 @@ namespace GameCube.GX.Texture
             byte[] indexes = new byte[4*4];
             for (int i = 0; i < indexes.Length; i++)
             {
-                // left-most bits are index0, rightmost are index15
+                // left-most bits are index0, right-most bits are index15
                 int rightShift = (15 - i) * 2;
                 indexes[i] = (byte)((indexesPacked >> rightShift) & 0b_11);
             }
             return indexes;
+        }
+
+        public static uint PackIndexes(byte[] indexes)
+        {
+            bool isValidQuantity = indexes.Length == 4*4; // 16
+            if (!isValidQuantity)
+                throw new ArgumentException();
+
+            uint packedIndexes = 0;
+            for (int i = 0; i < indexes.Length; i++)
+            {
+                // left-most bits are index0, right-most bits are index15
+                int leftShift = (15 - i) * 2;
+                uint bits = (uint)((indexes[i] & 0b11) << leftShift);
+                packedIndexes |= bits;
+            }
+
+            return packedIndexes;
         }
 
     }

@@ -123,6 +123,12 @@ namespace GameCube.GX.Texture
             }
         }
 
+        public void WriteTexture(EndianBinaryWriter writer, Block[] blocks) => WriteBlocks(writer, blocks, blocks.Length, 1);
+
+        public void WriteTexture(EndianBinaryWriter writer, Texture texture)
+        {
+
+        }
 
         /// <summary>
         /// Fetch a shared encoding instance for the provided <paramref name="textureFormat"/> format.

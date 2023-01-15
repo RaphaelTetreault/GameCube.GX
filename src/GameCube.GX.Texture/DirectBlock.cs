@@ -74,5 +74,9 @@
                     throw new System.ArgumentException(msg);
             }
         }
+
+        public DirectBlock(DirectEncoding directEncoding) : this(directEncoding.BlockWidth, directEncoding.BlockHeight, directEncoding.Format)
+        { }
+
     }
 }

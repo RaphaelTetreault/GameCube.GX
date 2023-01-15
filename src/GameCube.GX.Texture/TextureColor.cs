@@ -153,7 +153,7 @@ namespace GameCube.GX.Texture
             byte i = c.GetIntensity();
             byte i4 = (byte)(i >> 4);
             byte a4 = (byte)(c.a >> 4);
-            byte ia4 = (byte)(i4 << 4 + a4 << 0);
+            byte ia4 = (byte)((i4 << 4) + (a4 << 0));
             return ia4;
         }
 
@@ -182,7 +182,7 @@ namespace GameCube.GX.Texture
         {
             byte i = c.GetIntensity();
             byte a = c.a;
-            ushort ia8 = (ushort)(i << 8 + a << 00);
+            ushort ia8 = (ushort)((i << 8) + (a << 00));
             return ia8;
         }
 
@@ -213,7 +213,7 @@ namespace GameCube.GX.Texture
             byte r5 = (byte)((c.r >> 3) & 0b_0001_1111);
             byte g6 = (byte)((c.g >> 2) & 0b_0011_1111);
             byte b5 = (byte)((c.b >> 3) & 0b_0001_1111);
-            ushort rgb565 = (ushort)(r5 << 11 + g6 << 05 + b5 << 00);
+            ushort rgb565 = (ushort)((r5 << 11) + (g6 << 05) + (b5 << 00));
             return rgb565;
         }
 
@@ -267,7 +267,7 @@ namespace GameCube.GX.Texture
                 r = (byte)((c.r >> 3) & 0b_0001_1111); // 5 bits
                 g = (byte)((c.g >> 3) & 0b_0001_1111); // 5 bits
                 b = (byte)((c.b >> 3) & 0b_0001_1111); // 5 bits
-                rgb5a3 = (ushort)(opaque + r << 10 + g << 5 + b << 0);
+                rgb5a3 = (ushort)(opaque + (r << 10) + (g << 5) + (b << 0));
             }
             else
             {
@@ -275,10 +275,15 @@ namespace GameCube.GX.Texture
                 r = (byte)((c.r >> 4) & 0b_0000_1111); // 4 bits
                 g = (byte)((c.g >> 4) & 0b_0000_1111); // 4 bits
                 b = (byte)((c.b >> 4) & 0b_0000_1111); // 4 bits
-                rgb5a3 = (ushort)(a << 12 + r << 8 + g << 4 + b << 0);
+                rgb5a3 = (ushort)((a << 12) + (r << 8) + (g << 4) + (b << 0));
             }
             return rgb5a3;
         }
 
+
+        public override string ToString()
+        {
+            return $"{nameof(TextureColor)}(R:{r:x2}, G:{g:x2}, B:{b:x2}, A:{a:x2})";
+        }
     }
 }
