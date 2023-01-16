@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for 'compressed' (DXT1) texture.
+    /// Encoding format for 'compressed' (BC1/DXT1) texture.
     /// </summary>
     public sealed class EncodingCMPR : DirectEncoding
     {
@@ -80,8 +80,9 @@ namespace GameCube.GX.Texture
                     }
 
                     // Get color palette and indexes from compressor
-                    DXT1.FastBadRmsCmprColors(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
-                    // write block
+                    DXT1.RangeFitColors(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
+                    //DXT1.SingleColorLookupMethod(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
+                    // write DXT1 block
                     writer.Write(c0);
                     writer.Write(c1);
                     writer.Write(indexesPacked);
