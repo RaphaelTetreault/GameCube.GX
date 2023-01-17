@@ -136,8 +136,8 @@ namespace GameCube.GX.Texture
         /// </returns>
         public static TextureColor FromIA4(byte ia4)
         {
-            byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) * ((1 << 4) + 1));
-            byte a = (byte)(((ia4 >> 0) & 0b_0000_1111) * ((1 << 4) + 1));
+            byte i = (byte)(((ia4 >> 4) & 0b_0000_1111) / 15f * 255);
+            byte a = (byte)(((ia4 >> 0) & 0b_0000_1111) / 15f * 255);
             var color = new TextureColor(i, a);
             return color;
         }
@@ -195,9 +195,9 @@ namespace GameCube.GX.Texture
         /// </returns>
         public static TextureColor FromRGB565(ushort rgb565)
         {
-            byte r = (byte)(((rgb565 >> 11) & (0b_0001_1111)) * (1 << 3));
-            byte g = (byte)(((rgb565 >> 05) & (0b_0011_1111)) * (1 << 2));
-            byte b = (byte)(((rgb565 >> 00) & (0b_0001_1111)) * (1 << 3));
+            byte r = (byte)(((rgb565 >> 11) & (0b_0001_1111)) / 31f * 255);
+            byte g = (byte)(((rgb565 >> 05) & (0b_0011_1111)) / 63f * 255);
+            byte b = (byte)(((rgb565 >> 00) & (0b_0001_1111)) / 31f * 255);
             var color = new TextureColor(r, g, b);
             return color;
         }
@@ -230,16 +230,16 @@ namespace GameCube.GX.Texture
             bool hasAlpha = (rgb5a3 & 0x8000) == 0;
             if (hasAlpha)
             {
-                a = (byte)(((rgb5a3 >> 12) & (0b_0000_0111)) * (1 << 5));
-                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) * ((1 << 4) + 1));
-                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) * ((1 << 4) + 1));
-                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) * ((1 << 4) + 1));
+                a = (byte)(((rgb5a3 >> 12) & (0b_0000_0111)) / 07f * 255);
+                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) / 15f * 255);
+                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) / 15f * 255);
+                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) / 15f * 255);
             }
             else
             {
-                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) * (1 << 3));
-                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) * (1 << 3));
-                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) * (1 << 3));
+                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) / 31f * 255);
+                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) / 63f * 255);
+                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) / 31f * 255);
                 a = 0xFF;
             }
             var color = new TextureColor(r, g, b, a);
