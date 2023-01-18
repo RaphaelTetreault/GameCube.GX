@@ -1,7 +1,7 @@
 ﻿namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// C# implementation of https://github.com/svn2github/libsquish/blob/master/singlecolourfit.cpp
+    ///     C# implementation of https://github.com/svn2github/libsquish/blob/master/singlecolourfit.cpp
     /// </summary>
     public class DXT1LUT
     {

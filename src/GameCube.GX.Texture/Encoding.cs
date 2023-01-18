@@ -1,5 +1,4 @@
 ﻿using Manifold.IO;
-using Unity.Mathematics;
 
 namespace GameCube.GX.Texture
 {
@@ -22,51 +21,55 @@ namespace GameCube.GX.Texture
         public static readonly EncodingCMPR EncodingCMPR = new();
 
         /// <summary>
-        /// The pixel width of a block for this encoding.
+        ///     The pixel width of a block for this encoding.
         /// </summary>
         public abstract byte BlockWidth { get; }
 
         /// <summary>
-        /// The pixel height of a block for this encoding.
+        ///     The pixel height of a block for this encoding.
         /// </summary>
         public abstract byte BlockHeight { get; }
 
         /// <summary>
-        /// True if this block uses direct colour encoding.
+        ///     True if this block uses direct colour encoding.
         /// </summary>
         public abstract bool IsDirect { get; }
 
         /// <summary>
-        /// True if this block uses indirect colour encoding.
+        ///     True if this block uses indirect colour encoding.
         /// </summary>
         public abstract bool IsIndirect { get; }
 
         /// <summary>
-        /// The texture format used by this encoding.
+        ///     The texture format used by this encoding.
         /// </summary>
         public abstract TextureFormat Format { get; }
 
         /// <summary>
-        /// The number of bytes used by this encoding per block.
+        ///     The number of bytes used by this encoding per block.
         /// </summary>
         public abstract int BytesPerBlock { get; }
 
         /// <summary>
-        /// Read a block using this encoding.
+        ///     Read a block using this encoding.
         /// </summary>
         /// <param name="reader">The reader stream to read a block from.</param>
-        /// <returns>A texture block in the format specified by this encoding.</returns>
+        /// <returns>
+        ///     A texture block in the format specified by this encoding.
+        /// </returns>
         public abstract Block ReadBlock(EndianBinaryReader reader);
 
         /// <summary>
-        /// Read a number of texture blocks from a binary stream.
+        ///     Read a number of texture blocks from a binary stream.
         /// </summary>
         /// <typeparam name="TBlock">The type of block to encode.</typeparam>
         /// <param name="reader">The reader stream to read blocks from.</param>
         /// <param name="blocksWidthCount">The number of horizontal blocks to read from the stream.</param>
         /// <param name="blocksHeightCount">The number of vertical blocks to read from the stream.</param>
         /// <param name="encoding">The encoding used to deserialize the target texture block.</param>
-        /// <returns></returns>
+        /// <returns>
+        ///     
+        /// </returns>
         public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksWidthCount, int blocksHeightCount, Encoding encoding)
             where TBlock : Block
         {
@@ -76,32 +79,37 @@ namespace GameCube.GX.Texture
         }
 
         /// <summary>
-        /// Read a number of texture blocks from a binary stream.
+        ///     Read a number of texture blocks from a binary stream.
         /// </summary>
         /// <typeparam name="TBlock">The type of block to encode.</typeparam>
         /// <param name="reader">The reader stream to read blocks from.</param>
         /// <param name="blocksCount">The total number of blocks to read from the stream.</param>
         /// <param name="encoding">The encoding used to deserialize the target texture block.</param>
-        /// <returns></returns>
+        /// <returns>
+        ///     
+        /// </returns>
         public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksCount, Encoding encoding)
             where TBlock : Block
         {
             var blocks = new TBlock[blocksCount];
             for (int i = 0; i < blocksCount; i++)
-                blocks[i] = encoding.ReadBlock(reader) as TBlock;
+            {
+                var block = encoding.ReadBlock(reader);
+                blocks[i] = block as TBlock;
+            }
             return blocks;
         }
 
 
         /// <summary>
-        /// Write a texture block using this encoding.
+        ///     Write a texture block using this encoding.
         /// </summary>
         /// <param name="writer">The stream to write a texture block to.</param>
         /// <param name="block">The texture block to write to the stream.</param>
         public abstract void WriteBlock(EndianBinaryWriter writer, Block block);
 
         /// <summary>
-        /// Write a block using this encoding.
+        ///     Write a block using this encoding.
         /// </summary>
         /// <param name="writer">The stream to write a texture block to.</param>
         /// <param name="blocks">The texture blocks to write to the stream.</param>
@@ -127,14 +135,16 @@ namespace GameCube.GX.Texture
 
         public void WriteTexture(EndianBinaryWriter writer, Texture texture)
         {
-
+            throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Fetch a shared encoding instance for the provided <paramref name="textureFormat"/> format.
+        ///     Fetch a shared encoding instance for the provided <paramref name="textureFormat"/> format.
         /// </summary>
         /// <param name="textureFormat">The texture format encoding you want.</param>
-        /// <returns></returns>
+        /// <returns>
+        ///     
+        /// </returns>
         /// <exception cref="System.Exception">
         ///     Thrown if the <paramref name="textureFormat"/> is not defined.
         /// </exception>
@@ -158,29 +168,33 @@ namespace GameCube.GX.Texture
         }
 
         /// <summary>
-        /// Returns the number of blocks required to encode a <paramref name="widthPixels"/> by
-        /// <paramref name="heightPixels"/> sized texture using this encoding.
+        ///     Returns the number of blocks required to encode a <paramref name="widthPixels"/> by
+        ///     <paramref name="heightPixels"/> sized texture using this encoding.
         /// </summary>
         /// <param name="widthPixels">The width of the texture to encode.</param>
         /// <param name="heightPixels">The height of the texture to encode.</param>
-        /// <returns>The total number of blocks required to encode.</returns>
+        /// <returns>
+        ///     The total number of blocks required to encode.
+        /// </returns>
         public int GetTotalBlocksToEncode(int widthPixels, int heightPixels)
             => GetTotalBlocksToEncode(widthPixels, heightPixels, BlockWidth, BlockHeight);
 
         /// <summary>
-        /// Returns the number of blocks required to encode a <paramref name="widthPixels"/> by
-        /// <paramref name="heightPixels"/> sized texture using a <paramref name="blockWidth"/>
-        /// by <paramref name="blockHeight"/> sized encoding.
+        ///     Returns the number of blocks required to encode a <paramref name="widthPixels"/> by
+        ///     <paramref name="heightPixels"/> sized texture using a <paramref name="blockWidth"/>
+        ///     by <paramref name="blockHeight"/> sized encoding.
         /// </summary>
         /// <param name="widthPixels">The width of the texture to encode.</param>
         /// <param name="heightPixels">The height of the texture to encode.</param>
         /// <param name="blockWidth">The block width size of an encoding.</param>
         /// <param name="blockHeight">The block height size of an encoding.</param>
-        /// <returns>The total number of blocks required to encode.</returns>
+        /// <returns>
+        ///     The total number of blocks required to encode.
+        /// </returns>
         public static int GetTotalBlocksToEncode(int widthPixels, int heightPixels, int blockWidth, int blockHeight)
         {
-            int nBlocksWidth = (int)math.ceil(widthPixels / (float)blockWidth);
-            int nBlocksHeight = (int)math.ceil(heightPixels / (float)blockHeight);
+            int nBlocksWidth = (int)Math.Ceiling(widthPixels / (float)blockWidth);
+            int nBlocksHeight = (int)Math.Ceiling(heightPixels / (float)blockHeight);
             int totalBlocks = nBlocksWidth * nBlocksHeight;
             return totalBlocks;
         }

@@ -120,16 +120,18 @@ namespace GameCube.GX.Texture
 
 
         /// <summary>
-        /// 
+        ///     
         /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        ///     Could be made static!
-        /// </remarks>
-        public DirectBlock[] CreateTextureDirectColorBlocks(DirectEncoding directEncoding, out int blocksCountHorizontal, out int blocksCountVertical)
+        /// <param name="directEncoding"></param>
+        /// <param name="blocksCountHorizontal"></param>
+        /// <param name="blocksCountVertical"></param>
+        /// <returns>
+        ///     
+        /// </returns>
+        public static DirectBlock[] CreateTextureDirectColorBlocks(Texture sourceTexture, DirectEncoding directEncoding, out int blocksCountHorizontal, out int blocksCountVertical)
         {
-            blocksCountHorizontal = Width / directEncoding.BlockWidth;
-            blocksCountVertical = Height / directEncoding.BlockHeight;
+            blocksCountHorizontal = sourceTexture.Width / directEncoding.BlockWidth;
+            blocksCountVertical = sourceTexture.Height / directEncoding.BlockHeight;
             int blocksCount = blocksCountHorizontal * blocksCountVertical;
             DirectBlock[] blocks = new DirectBlock[blocksCount];
 
@@ -140,13 +142,45 @@ namespace GameCube.GX.Texture
                 {
                     int originX = h * directEncoding.BlockWidth;
                     int blockIndex = h + v * blocksCountHorizontal;
-                    blocks[blockIndex] = RegionToBlock(this, directEncoding, originX, originY);
+                    blocks[blockIndex] = RegionToDirectBlock(sourceTexture, directEncoding, originX, originY);
                 }
             }
 
             return blocks;
         }
+        
+        /// <summary>
+        ///     Cretae a new texture block from a <paramref name="sourceTexture"/>.
+        /// </summary>
+        /// <param name="sourceTexture">The source texture to copy a region from.</param>
+        /// <param name="directEncoding">The encoding to use use for the output block.</param>
+        /// <param name="originX">The left edge of the copied region from <paramref name="sourceTexture"/>.</param>
+        /// <param name="originY">The top edge of the copied region from <paramref name="sourceTexture"/>.</param>
+        /// <returns>
+        ///     A new block which contains the region sampled from <paramref name="sourceTexture"/>. The width
+        ///     and height of the block depends on the <paramref name="directEncoding"/> used.
+        /// </returns>
+        public static DirectBlock RegionToDirectBlock(Texture sourceTexture, DirectEncoding directEncoding, int originX, int originY)
+        {
+            var block = new DirectBlock(directEncoding);
 
+            // Figure out how many pixels to copy over. On smaller textures (eg: 4x2), outside region is black.
+            int nPixelsX = Math.Min(directEncoding.BlockWidth, sourceTexture.Width - originX);
+            int nPixelsY = Math.Min(directEncoding.BlockHeight, sourceTexture.Height - originY);
+
+            // Copy texture region into block
+            for (int y = 0; y < nPixelsY; y++)
+            {
+                int sourceY = originY + y;
+                for (int x = 0; x < nPixelsX; x++)
+                {
+                    int sourceX = originX + x;
+                    block[x, y] = sourceTexture[sourceX, sourceY];
+                }
+            }
+
+            return block;
+        }
 
 
         /// <summary>
@@ -390,27 +424,5 @@ namespace GameCube.GX.Texture
             return cropped;
         }
 
-
-        public static DirectBlock RegionToBlock(Texture sourceTexture, DirectEncoding directEncoding, int originX, int originY)
-        {
-            var block = new DirectBlock(directEncoding);
-
-            // Figure out how many pixels to copy over. On smaller textures (eg: 4x2), outside region is black.
-            int nPixelsX = Math.Min(directEncoding.BlockWidth, sourceTexture.Width - originX);
-            int nPixelsY = Math.Min(directEncoding.BlockHeight, sourceTexture.Height - originY);
-            
-            // Copy texture region into block
-            for (int y = 0; y < nPixelsY; y++)
-            {
-                int sourceY = originY + y;
-                for (int x = 0; x < nPixelsX; x++)
-                {
-                    int sourceX = originX + x;
-                    block[x, y] = sourceTexture[sourceX, sourceY];
-                }
-            }
-
-            return block;
-        }
     }
 }

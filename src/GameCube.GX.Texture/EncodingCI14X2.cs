@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for '14-bit colour-indexed' texture.
+    ///     Encoding format for '14-bit colour-indexed' texture.
     /// </summary>
     public sealed class EncodingCI14X2 : IndirectEncoding
     {

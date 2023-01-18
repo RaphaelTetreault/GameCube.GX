@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Palette for '5-bit red, 6-bit green, and 5-bit blue' indirect colour textures.
+    ///     Palette for '5-bit red, 6-bit green, and 5-bit blue' indirect colour textures.
     /// </summary>
     [System.Serializable]
     public sealed class PaletteRGB565 : Palette

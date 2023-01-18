@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for '8-bit red, 8-bit green, 8-bit blue, and 8-bit alpha' colour texture.
+    ///     Encoding format for '8-bit red, 8-bit green, 8-bit blue, and 8-bit alpha' colour texture.
     /// </summary>
     public sealed class EncodingRGBA8 : DirectEncoding
     {

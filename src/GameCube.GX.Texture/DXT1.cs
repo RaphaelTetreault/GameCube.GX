@@ -11,7 +11,7 @@ using System.Numerics;
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Utility class for DXT1 / Block Compression 1 algorithm.
+    ///     Utility class for DXT1 / Block Compression 1 algorithm.
     /// </summary>
     public static class DXT1
     {

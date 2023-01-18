@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for '8-bit intensity and 8-bit alpha' grayscale texture.
+    ///     Encoding format for '8-bit intensity and 8-bit alpha' grayscale texture.
     /// </summary>
     public sealed class EncodingIA8 : DirectEncoding
     {

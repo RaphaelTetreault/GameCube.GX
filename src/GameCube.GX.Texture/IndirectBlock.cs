@@ -7,23 +7,27 @@
     public sealed class IndirectBlock : Block
     {
         /// <summary>
-        /// This block's indirect colour indexes.
+        ///     This block's indirect colour indexes.
         /// </summary>
         public ushort[] ColorIndexes { get; private set; }
 
         /// <summary>
-        /// Indexer to get/set indirect colour index.
+        ///     Indexer to get/set indirect colour index.
         /// </summary>
         /// <param name="i">The pixel's indirect colour index.</param>
-        /// <returns>Indirect colour at the specified index within this block.</returns>
+        /// <returns>
+        ///     Indirect colour at the specified index within this block.
+        /// </returns>
         public ushort this[int i] { get => ColorIndexes[i]; set => ColorIndexes[i] = value; }
 
         /// <summary>
-        /// Indexer to get/set indirect colour index.
+        ///     Indexer to get/set indirect colour index.
         /// </summary>
         /// <param name="x">The horizontal coordinate of the indirect colour index in this block.</param>
         /// <param name="y">The vertical coordinate of the indirect colour index in this block.</param>
-        /// <returns>Indirect colour index at the specified coordinate within this block.</returns>
+        /// <returns>
+        ///     Indirect colour index at the specified coordinate within this block.
+        /// </returns>
         public ushort this[int x, int y]
         {
             get
@@ -40,7 +44,7 @@
         }
 
         /// <summary>
-        /// Construct a new indirect colour block.
+        ///     Construct a new indirect colour block.
         /// </summary>
         /// <param name="width">The width of the block.</param>
         /// <param name="height">The height of the block.</param>

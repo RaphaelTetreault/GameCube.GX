@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for 'compressed' (BC1/DXT1) texture.
+    ///     Encoding format for 'compressed' (BC1/DXT1) texture.
     /// </summary>
     public sealed class EncodingCMPR : DirectEncoding
     {
@@ -80,8 +80,7 @@ namespace GameCube.GX.Texture
                     }
 
                     // Get color palette and indexes from compressor
-                    DXT1.RangeFitColors(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
-                    //DXT1.SingleColorLookupMethod(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
+                    GetCmprColorAndIndexes(colors4x4, out ushort c0, out ushort c1, out uint indexesPacked);
                     // write DXT1 block
                     writer.Write(c0);
                     writer.Write(c1);
@@ -90,7 +89,15 @@ namespace GameCube.GX.Texture
             }
         }
 
-
+        /// <summary>
+        ///     Reconstruct a CMPR block's palette based on the 2 color endpoints <paramref name="c0"/>
+        ///     and <paramref name="c1"/>.
+        /// </summary>
+        /// <param name="c0">Color 0.</param>
+        /// <param name="c1">Color 1.</param>
+        /// <returns>
+        ///     An array of <cref>TextureColor</cref> with exactly 4 colors in it for 2-bit CMPR index.
+        /// </returns>
         public static TextureColor[] GetCmprPalette(ushort c0, ushort c1)
         {
             var colors = new TextureColor[4];
@@ -109,6 +116,26 @@ namespace GameCube.GX.Texture
             return colors;
         }
 
+        /// <summary>
+        ///     Get CMPR compressed colors and indexes.
+        /// </summary>
+        /// <param name="colors4x4"></param>
+        /// <param name="c0">Color 0 of CMPR palette.</param>
+        /// <param name="c1">Color 1 of CMPR palette.</param>
+        /// <param name="indexesPacked">Packed CMPR color indexes.</param>
+        public static void GetCmprColorAndIndexes(TextureColor[] colors4x4, out ushort c0, out ushort c1, out uint indexesPacked)
+        {
+            // For now use naive range-fit for CMPR
+            DXT1.RangeFitColors(colors4x4, out c0, out c1, out indexesPacked);
+        }
+
+        /// <summary>
+        ///     Unpack CMPR indexes from <paramref name="indexesPacked"/>.
+        /// </summary>
+        /// <param name="indexesPacked">The 16 2-bit CMPR indexes packed into uint32.</param>
+        /// <returns>
+        ///     A byte array of exactly 16 entries, one for each of the CMPR indexes in a 4x4 block. 
+        /// </returns>
         public static byte[] UnpackIndexes(uint indexesPacked)
         {
             byte[] indexes = new byte[4*4];
@@ -121,11 +148,24 @@ namespace GameCube.GX.Texture
             return indexes;
         }
 
+        /// <summary>
+        ///     Pack CMPR <paramref name="indexes"/>
+        /// </summary>
+        /// <param name="indexes">The 16 2-bit CMPR indexes to pack into uint32.</param>
+        /// <returns>
+        ///     A uint32 where each 2 bits represent a CMPR color index.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        ///     Thrown if length of indexes array is not exatly 16.
+        /// </exception>
         public static uint PackIndexes(byte[] indexes)
         {
             bool isValidQuantity = indexes.Length == 4*4; // 16
             if (!isValidQuantity)
-                throw new ArgumentException();
+            {
+                string msg = $"Argument {nameof(indexes)}.Length is not exatly 16.";
+                throw new ArgumentException(msg);
+            }
 
             uint packedIndexes = 0;
             for (int i = 0; i < indexes.Length; i++)

@@ -3,7 +3,7 @@
 namespace GameCube.GX.Texture
 {
     /// <summary>
-    /// Encoding format for '4-bit intensity' grayscale texture.
+    ///     Encoding format for '4-bit intensity' grayscale texture.
     /// </summary>
     public sealed class EncodingI4 : DirectEncoding
     {
@@ -15,9 +15,6 @@ namespace GameCube.GX.Texture
 
         public override Block ReadBlock(EndianBinaryReader reader)
         {
-            // Make sure we have a width divisible by 2. Nybbles come in pairs.
-            Assert.IsTrue(BlockWidth % 2 == 0);
-
             var block = new DirectBlock(BlockWidth, BlockHeight, Format);
             for (int y = 0; y < block.Height; y++)
             {
@@ -41,9 +38,6 @@ namespace GameCube.GX.Texture
 
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
-            // Make sure we have a width divisible by 2. Nybbles come in pairs.
-            Assert.IsTrue(BlockWidth % 2 == 0);
-
             var colorBlock = block as DirectBlock;
             for (int y = 0; y < block.Height; y++)
             {
