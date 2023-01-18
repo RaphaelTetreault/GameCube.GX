@@ -123,8 +123,6 @@ namespace GameCube.GX.Texture
         ///     
         /// </summary>
         /// <param name="directEncoding"></param>
-        /// <param name="blocksCountHorizontal"></param>
-        /// <param name="blocksCountVertical"></param>
         /// <returns>
         ///     
         /// </returns>
@@ -148,7 +146,11 @@ namespace GameCube.GX.Texture
 
             return blocks;
         }
-        
+
+        public static DirectBlock[] CreateTextureDirectColorBlocks(Texture sourceTexture, DirectEncoding directEncoding)
+            => CreateTextureDirectColorBlocks(sourceTexture, directEncoding, out _, out _);
+
+
         /// <summary>
         ///     Cretae a new texture block from a <paramref name="sourceTexture"/>.
         /// </summary>

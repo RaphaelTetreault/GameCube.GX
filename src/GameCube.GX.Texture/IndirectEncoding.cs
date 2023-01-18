@@ -26,5 +26,19 @@
         public override bool IsDirect => false;
         public override bool IsIndirect => true;
         public override int BytesPerBlock => (int)MathF.Ceiling(BitsPerIndex / 8f * BlockWidth * BlockHeight);
+
+        new public static IndirectEncoding GetEncoding(TextureFormat textureFormat)
+        {
+            switch (textureFormat)
+            {
+                case TextureFormat.CI4: return EncodingCI4;
+                case TextureFormat.CI8: return EncodingCI8;
+                case TextureFormat.CI14X2: return EncodingCI14X2;
+
+                default:
+                    string msg = $"Requested texture format {textureFormat} is not a {nameof(IndirectEncoding)} type.";
+                    throw new System.Exception(msg);
+            }
+        }
     }
 }

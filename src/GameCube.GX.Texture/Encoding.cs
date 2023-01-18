@@ -70,11 +70,11 @@ namespace GameCube.GX.Texture
         /// <returns>
         ///     
         /// </returns>
-        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksWidthCount, int blocksHeightCount, Encoding encoding)
+        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, Encoding encoding, int blocksWidthCount, int blocksHeightCount)
             where TBlock : Block
         {
             int blocksCount = blocksWidthCount * blocksHeightCount;
-            var blocks = ReadBlocks<TBlock>(reader, blocksCount, encoding);
+            var blocks = ReadBlocks<TBlock>(reader, encoding, blocksCount);
             return blocks;
         }
 
@@ -83,12 +83,12 @@ namespace GameCube.GX.Texture
         /// </summary>
         /// <typeparam name="TBlock">The type of block to encode.</typeparam>
         /// <param name="reader">The reader stream to read blocks from.</param>
-        /// <param name="blocksCount">The total number of blocks to read from the stream.</param>
         /// <param name="encoding">The encoding used to deserialize the target texture block.</param>
+        /// <param name="blocksCount">The total number of blocks to read from the stream.</param>
         /// <returns>
         ///     
         /// </returns>
-        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, int blocksCount, Encoding encoding)
+        public TBlock[] ReadBlocks<TBlock>(EndianBinaryReader reader, Encoding encoding, int blocksCount)
             where TBlock : Block
         {
             var blocks = new TBlock[blocksCount];
@@ -113,25 +113,13 @@ namespace GameCube.GX.Texture
         /// </summary>
         /// <param name="writer">The stream to write a texture block to.</param>
         /// <param name="blocks">The texture blocks to write to the stream.</param>
-        /// <param name="blocksWidthCount">The number of horizontal blocks to write to the stream.</param>
-        /// <param name="blocksHeightCount">The number of vertical blocks to write to the stream.</param>
-        public void WriteBlocks(EndianBinaryWriter writer, Block[] blocks, int blocksWidthCount, int blocksHeightCount)
+        public void WriteBlocks(EndianBinaryWriter writer, Block[] blocks)
         {
-            int blocksCount = blocksWidthCount * blocksHeightCount;
-            Assert.IsTrue(blocks.Length == blocksCount);
-
-            for (int h = 0; h < blocksHeightCount; h++)
-            {
-                for (int w = 0; w < blocksWidthCount; w++)
-                {
-                    int index = w + h * blocksWidthCount;
-                    var block = blocks[index];
-                    WriteBlock(writer, block);
-                }
-            }
+            foreach (var block in blocks)
+                WriteBlock(writer, block);
         }
 
-        public void WriteTexture(EndianBinaryWriter writer, Block[] blocks) => WriteBlocks(writer, blocks, blocks.Length, 1);
+        public void WriteTexture(EndianBinaryWriter writer, Block[] blocks) => WriteBlocks(writer, blocks);
 
         public void WriteTexture(EndianBinaryWriter writer, Texture texture)
         {
