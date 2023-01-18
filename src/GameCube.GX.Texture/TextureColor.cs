@@ -230,17 +230,17 @@ namespace GameCube.GX.Texture
             bool hasAlpha = (rgb5a3 & 0x8000) == 0;
             if (hasAlpha)
             {
-                a = (byte)(((rgb5a3 >> 12) & (0b_0000_0111)) / 07f * 255);
-                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) / 15f * 255);
-                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) / 15f * 255);
-                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) / 15f * 255);
+                a = (byte)(((rgb5a3 >> 12) & (0b_0000_0111)) / 07f * 255); // lower 3 of 4 bits
+                r = (byte)(((rgb5a3 >> 08) & (0b_0000_1111)) / 15f * 255); // 4 bits
+                g = (byte)(((rgb5a3 >> 04) & (0b_0000_1111)) / 15f * 255); // 4 bits
+                b = (byte)(((rgb5a3 >> 00) & (0b_0000_1111)) / 15f * 255); // 4 bits
             }
             else
             {
-                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) / 31f * 255);
-                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) / 63f * 255);
-                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) / 31f * 255);
-                a = 0xFF;
+                a = 0xFF;                                                  // alpha implied
+                r = (byte)(((rgb5a3 >> 10) & (0b_0001_1111)) / 31f * 255); // 5 bits
+                g = (byte)(((rgb5a3 >> 05) & (0b_0001_1111)) / 31f * 255); // 5 bits
+                b = (byte)(((rgb5a3 >> 00) & (0b_0001_1111)) / 31f * 255); // 5 bits
             }
             var color = new TextureColor(r, g, b, a);
             return color;
