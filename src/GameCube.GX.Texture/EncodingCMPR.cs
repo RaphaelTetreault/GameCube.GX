@@ -5,6 +5,9 @@ namespace GameCube.GX.Texture
     /// <summary>
     ///     Encoding format for 'compressed' (BC1/DXT1) texture.
     /// </summary>
+    /// 
+    /// TODO: better compression
+    /// https://github.com/Nominom/BCnEncoder.NET/blob/master/BCnEnc.Net/Encoder/Bc1BlockEncoder.cs
     public sealed class EncodingCMPR : DirectEncoding
     {
         public override byte BlockWidth => 8;
