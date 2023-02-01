@@ -426,5 +426,30 @@ namespace GameCube.GX.Texture
             return cropped;
         }
 
+        public static void Copy(Texture sourceTexture, Texture destinationTexture, int destinationOriginX = 0, int destinationOriginY = 0)
+        {
+            bool canFitX = destinationOriginX + sourceTexture.Width <= destinationTexture.Width;
+            bool canFitY = destinationOriginX + sourceTexture.Height <= destinationTexture.Height;
+            bool cannotFitCopy = !canFitX || !canFitY;
+            if (cannotFitCopy)
+            {
+                string msg =
+                    $"Cannot copy texture contents. Destination texture ({destinationTexture.Width},{destinationTexture.Height}) " +
+                    $"not large enough to fit source texture ({sourceTexture.Width},{sourceTexture.Height}) at origin point " +
+                    $"({destinationOriginX},{destinationOriginY})";
+                throw new ArgumentException(msg);
+            }
+
+            // Copy over data
+            for (int y = 0; y < sourceTexture.Height; y++)
+            {
+                int dy = destinationOriginY + y;
+                for (int x = 0; x < sourceTexture.Width; x++)
+                {
+                    int dx = destinationOriginX + x; ;
+                    destinationTexture[dx,dy] = sourceTexture[x,y];
+                }
+            }
+        }
     }
 }

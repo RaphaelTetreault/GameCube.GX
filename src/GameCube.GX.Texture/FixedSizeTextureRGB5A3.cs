@@ -30,8 +30,8 @@ namespace GameCube.GX.Texture
             if (hasInvalidDimensions)
             {
                 string msg =
-                    $"Banner has invalid dimensions ({Texture.Width},{Texture.Height})." +
-                    $"Banner must have a dimension of exactly ({Texture.Width}, {Texture.Height}).";
+                    $"{GetType().Name} has invalid dimensions ({Texture.Width},{Texture.Height}). " +
+                    $"{GetType().Name} must have a dimension of exactly ({Width}, {Height}).";
                 throw new ArgumentException(msg);
             }
 
