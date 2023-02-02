@@ -281,6 +281,8 @@ namespace GameCube.GX.Texture
         }
 
 
+        public static readonly TextureColor Clear = new TextureColor(0, 0);
+
         public override string ToString()
         {
             return $"{nameof(TextureColor)}(R:{r:x2}, G:{g:x2}, B:{b:x2}, A:{a:x2})";
