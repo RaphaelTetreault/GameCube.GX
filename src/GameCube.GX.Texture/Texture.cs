@@ -429,7 +429,7 @@ namespace GameCube.GX.Texture
         public static void Copy(Texture sourceTexture, Texture destinationTexture, int destinationOriginX = 0, int destinationOriginY = 0)
         {
             bool canFitX = destinationOriginX + sourceTexture.Width <= destinationTexture.Width;
-            bool canFitY = destinationOriginX + sourceTexture.Height <= destinationTexture.Height;
+            bool canFitY = destinationOriginY + sourceTexture.Height <= destinationTexture.Height;
             bool cannotFitCopy = !canFitX || !canFitY;
             if (cannotFitCopy)
             {

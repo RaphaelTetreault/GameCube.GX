@@ -13,6 +13,12 @@ namespace GameCube.GX.Texture
 
         public Texture Texture { get; set; } = new Texture();
 
+        public FixedSizeTextureRGB5A3()
+        {
+            Texture = new Texture(Width, Height, TextureFormat.RGB5A3);
+        }
+
+
         public void Deserialize(EndianBinaryReader reader)
         {
             int blocksHorizontal = Width / DirectEncoding.BlockWidth;
