@@ -9,6 +9,6 @@ namespace GameCube.DiskImage
     public class FileEntry
     {
         public string Name { get; set; }
-        public byte[] data { get; set; }
+        public byte[] Data { get; set; }
     }
 }

@@ -19,10 +19,11 @@ namespace GameCube.DiskImage
         // Pointers are temp for now
         public const Endianness endianness = Endianness.BigEndian;
 
+
         public Endianness Endianness => endianness;
         public string FileExtension => ".iso";
         public string FileName { get; set; } = string.Empty;
-
+        public FileSystem FileSystem => fileSystem;
 
 
         public void Deserialize(EndianBinaryReader reader)
