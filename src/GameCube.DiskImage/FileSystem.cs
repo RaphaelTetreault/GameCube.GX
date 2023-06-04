@@ -1,11 +1,4 @@
-﻿using Manifold;
-using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Manifold.IO;
 
 namespace GameCube.DiskImage
 {
@@ -13,12 +6,13 @@ namespace GameCube.DiskImage
         IBinaryAddressable,
         IBinarySerializable
     {
+        private byte[] raw;
         private FileSystemEntry root;
         private FileSystemEntry[] entries;
 
-        public List<FileEntry> FileEntries { get; private set; } = new List<FileEntry>();
         public AddressRange AddressRange { get; set; }
-
+        public List<FileEntry> FileEntries { get; private set; } = new List<FileEntry>();
+        public byte[] Raw => raw;
 
 
         public void Deserialize(EndianBinaryReader reader)
@@ -28,7 +22,7 @@ namespace GameCube.DiskImage
                 reader.Read(ref root);
                 reader.Read(ref entries, root.RootEntries - 1);
             }
-            this.RecordEndAddress(reader);
+            // defer recording final address
 
             // Compile all files and directories
             FileSystemEntry[] allFileEntries = new FileSystemEntry[root.RootEntries];
@@ -65,6 +59,9 @@ namespace GameCube.DiskImage
                 //Console.WriteLine(paths[i]);
             }
 
+            // Now that strings are read, we have the final address
+            this.RecordEndAddress(reader);
+
             // Compile file paths with data.
             // TODO: perhaps make this an enumerator? Not multithreadable as-is.
             FileEntries = new List<FileEntry>();
@@ -87,7 +84,11 @@ namespace GameCube.DiskImage
                 FileEntries.Add(fileEntry);
             }
 
-            reader.JumpToAddress(AddressRange.endAddress);
+            // Read FST as single block
+            reader.JumpToAddress(AddressRange.startAddress);
+            reader.Read(ref raw, AddressRange.Size);
+            // The address should end where it was, otherwise wrong amount of data read.
+            Assert.IsTrue(reader.BaseStream.Position == AddressRange.endAddress);
         }
 
         public void Serialize(EndianBinaryWriter writer)
