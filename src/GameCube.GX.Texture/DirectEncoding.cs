@@ -1,4 +1,4 @@
-﻿using Manifold.IO;
+﻿using System;
 
 namespace GameCube.GX.Texture
 {
@@ -39,7 +39,7 @@ namespace GameCube.GX.Texture
 
                 default:
                     string msg = $"Requested texture format {textureFormat} is not a {nameof(DirectEncoding)} type.";
-                    throw new System.Exception(msg);
+                    throw new Exception(msg);
             }
         }
     }

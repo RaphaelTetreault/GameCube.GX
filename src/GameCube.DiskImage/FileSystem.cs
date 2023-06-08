@@ -1,4 +1,6 @@
 ﻿using Manifold.IO;
+using System;
+using System.Collections.Generic;
 
 namespace GameCube.DiskImage
 {

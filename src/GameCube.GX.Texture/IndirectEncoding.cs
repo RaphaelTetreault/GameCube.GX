@@ -1,4 +1,6 @@
-﻿namespace GameCube.GX.Texture
+﻿using System;
+
+namespace GameCube.GX.Texture
 {
     /// <summary>
     ///     The base representation of a GameCube indirect-colour texture format encoding.

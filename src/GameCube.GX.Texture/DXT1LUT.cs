@@ -1,4 +1,6 @@
-﻿namespace GameCube.GX.Texture
+﻿using System;
+
+namespace GameCube.GX.Texture
 {
     /// <summary>
     ///     C# implementation of https://github.com/svn2github/libsquish/blob/master/singlecolourfit.cpp
