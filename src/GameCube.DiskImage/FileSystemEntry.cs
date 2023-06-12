@@ -1,82 +1,59 @@
 ﻿using Manifold.IO;
-using System;
 
 namespace GameCube.DiskImage
 {
+    /// <summary>
+    ///     Represents a file or folder in an ARC file. Can be either a file or directory.
+    /// </summary>
     public class FileSystemEntry :
         IBinaryAddressable,
         IBinarySerializable
     {
         private FileSystemEntryType type; // 1 byte
-        private Offset fileNameOffset; // 3 bytes
-        private Offset fileOrDirectoryOffset; // if file OR directory
-        private int fileLengthOrDirectoryEntries; // if file OR directory
-        // References
-        //private CString fileName = null;
+        private Pointer entryNamePtr; // 3 bytes
+        private Pointer filePtrOrDirectoryParentPtr;
+        private int fileLengthOrDirectoryLastChildIndex;
 
         public AddressRange AddressRange { get; set; }
         public FileSystemEntryType Type { get => type; set => type = value; }
-        public int DirectoryOffset { get; set; }
-        public int DirectoryStackCount { get; set; }
-        public int FileOffset { get; set; }
-        public int FileNameOffset { get; set; }
-        public int FileLength { get; set; }
-        public int RootEntries { get; set; }
+        public int DirectoryParentOffset { get => filePtrOrDirectoryParentPtr; set => filePtrOrDirectoryParentPtr =  value; }
+        public int DirectoryLastChildIndex { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
+        public Pointer FilePointer { get => filePtrOrDirectoryParentPtr; set => filePtrOrDirectoryParentPtr = value; }
+        public Pointer NamePointer { get => entryNamePtr; set => entryNamePtr = value; }
+        public int FileLength { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
+        public int RootEntries { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
 
 
         public void Deserialize(EndianBinaryReader reader)
         {
             this.RecordStartAddress(reader);
             {
-                reader.Read(ref type);
+                uint typeAndFileNameOffset = reader.ReadUInt32();
+                reader.Read(ref filePtrOrDirectoryParentPtr);
+                reader.Read(ref fileLengthOrDirectoryLastChildIndex);
 
-                // 3 bytes
-                reader.BaseStream.Position--;
-                reader.Read(ref fileNameOffset);
-                fileNameOffset &= 0x00FFFFFF; // mask upper 8 bits
-                // TODO: assert?
-
-                reader.Read(ref fileOrDirectoryOffset);
-                reader.Read(ref fileLengthOrDirectoryEntries);
+                // Unpack type and file name offset
+                type = (FileSystemEntryType)((typeAndFileNameOffset >> 24) & 0xFF);
+                entryNamePtr = typeAndFileNameOffset & 0x00FFFFFF;
             }
             this.RecordEndAddress(reader);
-            {
-                // Set properties and do a sanity check
-                switch (type)
-                {
-                    case FileSystemEntryType.File:
-                        FileNameOffset = fileNameOffset;
-                        FileOffset = fileOrDirectoryOffset;
-                        FileLength = fileLengthOrDirectoryEntries;
-                        break;
-
-                    case FileSystemEntryType.Directory:
-                        DirectoryOffset = fileOrDirectoryOffset;
-                        DirectoryStackCount = fileLengthOrDirectoryEntries;
-                        RootEntries = fileLengthOrDirectoryEntries;
-                        break;
-
-                    default:
-                        string msg = $"{nameof(FileSystemEntryType)} type is not defined. Value is: '{type}'.";
-                        throw new ArgumentException(msg);
-                }
-            }
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
             // TODO: ensure entry is either file or directory.
-            fileOrDirectoryOffset = type == FileSystemEntryType.File ? FileOffset : DirectoryOffset;
-            fileLengthOrDirectoryEntries = type == FileSystemEntryType.File ? FileLength : RootEntries;
+            filePtrOrDirectoryParentPtr = type == FileSystemEntryType.File ? FilePointer : DirectoryParentOffset;
+            fileLengthOrDirectoryLastChildIndex = type == FileSystemEntryType.File ? FileLength : RootEntries;
+            uint typePacked = (uint)type << 24;
+            uint fileNameOffsetPacked = (uint)entryNamePtr & 0x00FFFFFF;
+            uint typeAndFileNameOffset = typePacked + fileNameOffsetPacked;
 
-            // Write 4 bytes for file name offset
-            writer.Write(fileNameOffset);
-            // Back up 4 bytes, overwrite first byte
-            writer.BaseStream.Position -= 4;
-            writer.Write(type);
-            // forward 3 bytes back to correct stream position
-            writer.Write(fileOrDirectoryOffset);
-            writer.Write(fileLengthOrDirectoryEntries);
+            writer.Write(typeAndFileNameOffset);
+            writer.Write(filePtrOrDirectoryParentPtr);
+            writer.Write(fileLengthOrDirectoryLastChildIndex);
+
+            // You have not implemented properly handling the above / getting addresses!
+            throw new System.NotImplementedException();
         }
     }
 }
