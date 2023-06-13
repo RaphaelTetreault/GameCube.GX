@@ -10,16 +10,16 @@ namespace GameCube.DiskImage
         IBinarySerializable
     {
         private FileSystemEntryType type; // 1 byte
-        private Pointer entryNamePtr; // 3 bytes
+        private Offset entryNameOffset; // 3 bytes
         private Pointer filePtrOrDirectoryParentPtr;
         private int fileLengthOrDirectoryLastChildIndex;
 
         public AddressRange AddressRange { get; set; }
         public FileSystemEntryType Type { get => type; set => type = value; }
-        public int DirectoryParentOffset { get => filePtrOrDirectoryParentPtr; set => filePtrOrDirectoryParentPtr =  value; }
+        public int DirectoryParentOffset { get => filePtrOrDirectoryParentPtr; set => filePtrOrDirectoryParentPtr = value; }
         public int DirectoryLastChildIndex { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
         public Pointer FilePointer { get => filePtrOrDirectoryParentPtr; set => filePtrOrDirectoryParentPtr = value; }
-        public Pointer NamePointer { get => entryNamePtr; set => entryNamePtr = value; }
+        public Offset NameOffset { get => entryNameOffset; set => entryNameOffset = value; }
         public int FileLength { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
         public int RootEntries { get => fileLengthOrDirectoryLastChildIndex; set => fileLengthOrDirectoryLastChildIndex = value; }
 
@@ -34,23 +34,27 @@ namespace GameCube.DiskImage
 
                 // Unpack type and file name offset
                 type = (FileSystemEntryType)((typeAndFileNameOffset >> 24) & 0xFF);
-                entryNamePtr = typeAndFileNameOffset & 0x00FFFFFF;
+                entryNameOffset = typeAndFileNameOffset & 0x00FFFFFF;
             }
             this.RecordEndAddress(reader);
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
-            // TODO: ensure entry is either file or directory.
-            filePtrOrDirectoryParentPtr = type == FileSystemEntryType.File ? FilePointer : DirectoryParentOffset;
-            fileLengthOrDirectoryLastChildIndex = type == FileSystemEntryType.File ? FileLength : RootEntries;
-            uint typePacked = (uint)type << 24;
-            uint fileNameOffsetPacked = (uint)entryNamePtr & 0x00FFFFFF;
-            uint typeAndFileNameOffset = typePacked + fileNameOffsetPacked;
+            this.RecordStartAddress(writer);
+            {
+                // TODO: ensure entry is either file or directory.
+                filePtrOrDirectoryParentPtr = type == FileSystemEntryType.File ? FilePointer : DirectoryParentOffset;
+                fileLengthOrDirectoryLastChildIndex = type == FileSystemEntryType.File ? FileLength : RootEntries;
+                uint typePacked = (uint)type << 24;
+                uint fileNameOffsetPacked = (uint)entryNameOffset & 0x00FFFFFF;
+                uint typeAndFileNameOffset = typePacked + fileNameOffsetPacked;
 
-            writer.Write(typeAndFileNameOffset);
-            writer.Write(filePtrOrDirectoryParentPtr);
-            writer.Write(fileLengthOrDirectoryLastChildIndex);
+                writer.Write(typeAndFileNameOffset);
+                writer.Write(filePtrOrDirectoryParentPtr);
+                writer.Write(fileLengthOrDirectoryLastChildIndex);
+            }
+            this.RecordEndAddress(writer);
 
             // You have not implemented properly handling the above / getting addresses!
             throw new System.NotImplementedException();

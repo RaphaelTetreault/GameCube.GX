@@ -15,6 +15,7 @@ namespace GameCube.DiskImage
         private DiskHeaderInformation diskHeaderInformation;
         private Apploader apploader;
         private FileSystem fileSystem;
+        private FileSystemFile[] fileSystemFiles;
         //private MainExecutable mainExecutable;
         private byte[] mainExecutableRaw;
 
@@ -29,6 +30,7 @@ namespace GameCube.DiskImage
         public DiskHeader DiskHeader { get => diskHeader; set => diskHeader = value; }
         public DiskHeaderInformation DiskHeaderInformation { get => diskHeaderInformation; set => diskHeaderInformation = value; }
         public FileSystem FileSystem { get => fileSystem; set => fileSystem = value; }
+        public FileSystemFile[] FileSystemFiles { get => fileSystemFiles; set => fileSystemFiles = value; }
         //public MainExecutable MainExecutable { get => mainExecutable; set => mainExecutable = value; }
         public byte[] MainExecutableRaw => mainExecutableRaw;
 
@@ -48,8 +50,11 @@ namespace GameCube.DiskImage
             reader.Read(ref apploader);
             
             // Non-fixed addresses
+            // Read FS description
             reader.JumpToAddress(diskHeader.FileSystemPointer);
             reader.Read(ref fileSystem);
+            // Read files from FS
+            fileSystemFiles = FileSystemFile.ReadFiles(reader, fileSystem);
             // cont.
             reader.JumpToAddress(diskHeader.MainExecutablePtr);
             int size = diskHeader.FileSystemPointer - diskHeader.MainExecutablePtr;
