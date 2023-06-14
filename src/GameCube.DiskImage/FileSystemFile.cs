@@ -132,7 +132,7 @@ namespace GameCube.DiskImage
                 };
             }
 
-            return files;
+            return files.ToArray();
         }
     }
 }

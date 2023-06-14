@@ -1,5 +1,6 @@
 ﻿using Manifold.IO;
 using System;
+using System.Collections.Generic;
 
 namespace GameCube.DiskImage
 {
@@ -8,84 +9,80 @@ namespace GameCube.DiskImage
         IBinarySerializable
     {
         private byte[] raw = Array.Empty<byte>();
-        private FileSystemEntry root = new FileSystemEntry();
-        private FileSystemEntry[] entries = Array.Empty<FileSystemEntry>();
+        private DirectoryNode root = new();
+        private FileSystemNode[] nodes = Array.Empty<FileSystemNode>();
+        private AddressRange fileSystemNodesAddressRange;
+        private AddressRange namesAddressRange;
 
         public AddressRange AddressRange { get; set; }
-        public string[] Paths { get; private set; } = Array.Empty<string>();
-        public string[] Directories { get; private set; } = Array.Empty<string>();
-        public FileSystemFileEntry[] FilesEntries { get; set; } = Array.Empty<FileSystemFileEntry>();
+
         public byte[] Raw => raw;
+
+
+        public FileSystemFileEntry[] FilesEntries { get; set; } = Array.Empty<FileSystemFileEntry>();
+        public AddressRange FileSystemNodesAddressRange { get => fileSystemNodesAddressRange; set => fileSystemNodesAddressRange = value; }
+        public AddressRange NamesAddressRange { get => namesAddressRange; set => namesAddressRange = value; }
 
 
         public void Deserialize(EndianBinaryReader reader)
         {
             this.RecordStartAddress(reader);
-
-            // Read root and reset stream position.
-            // Loops later in code begin at index 1 to skip root.
-            reader.Read(ref root);
-            reader.JumpToAddress(AddressRange.startAddress);
-            // Read all entries in one go
-            reader.Read(ref entries, root.RootEntries);
-
-            // Count files and folders
-            int dirCount = 0;
-            int fileCount = 0;
-            for (int i = 1; i < entries.Length; i++)
-                if (entries[i].Type == FileSystemEntryType.File)
-                    fileCount++;
-                else
-                    dirCount++;
-
-            // Create file and folder paths from source
-            FilesEntries = new FileSystemFileEntry[fileCount];
-            Directories = new string[dirCount];
-            Paths = new string[entries.Length];
-            Paths[0] = string.Empty; // Root path
-
-            // Jump to correct index in name table, skip root (which is optional?)
-            // Technically we jump for each entry, but we can read sequentially.
-            var nameTableBasePointer = reader.GetPositionAsPointer();
-            var firstNamePointer = nameTableBasePointer + entries[1].NameOffset;
-            reader.JumpToAddress(firstNamePointer);
-
-            // Build up file and folder names
-            int dirIndex = 0;
-            int fileIndex = 0;
-            for (int i = 1; i < entries.Length; i++)
+            fileSystemNodesAddressRange.RecordStartAddress(reader);
             {
-                // Get entry and get entries' name
-                var entry = entries[i];
-                AsciiCString entryName = string.Empty;
-                reader.Read(ref entryName);
+                // Read root and reset stream position.
+                // Loops later in code begin at index 1 to skip root.
+                reader.Read(ref root);
+                reader.JumpToAddress(AddressRange.startAddress);
+                // Read all entries in one go
+                reader.Read(ref nodes, root.RootNodeCount);
+            }
+            fileSystemNodesAddressRange.RecordEndAddress(reader);
+            namesAddressRange.RecordStartAddress(reader);
+            {
+                var directoryStack = new Stack<DirectoryNode>();
+                directoryStack.Push(root);
 
-                bool isDirectory = entry.Type == FileSystemEntryType.Directory;
-                if (isDirectory)
+                // Get names for all elements
+                for (int i = 1; i < nodes.Length; i++)
                 {
-                    // Append directory to relevant paths
-                    for (int pathIndex = i; pathIndex < entry.DirectoryLastChildIndex; pathIndex++)
-                        Paths[pathIndex] += $"{entryName}/";
-                    // Register directory
-                    Directories[dirIndex] = Paths[i];
-                    dirIndex++;
-                }
-                else
-                {
-                    // Append file name to path
-                    Paths[i] += entryName;
-                    // Register file path
-                    FilesEntries[fileIndex] = new FileSystemFileEntry()
+                    // Clear directories from stack when last child index is met
+                    while (i >= directoryStack.Peek().DirectoryLastChildIndex)
+                        directoryStack.Pop();
+
+                    // Interally cast node to FileNode or DirectoryNode
+                    nodes[i] = nodes[i].GetNodeAsProperType();
+                    var currentNode = nodes[i];
+
+                    // Add current node to directory stack
+                    var currentDirectory = directoryStack.Peek();
+                    currentDirectory.AddChild(currentNode);
+
+                    // Get name
+                    AsciiCString entryName = string.Empty;
+                    var namePtr = namesAddressRange.startAddress + currentNode.NameOffset;
+                    reader.JumpToAddress(namePtr);
+                    reader.Read(ref entryName);
+                    currentNode.Name = entryName;
+
+                    // If a directory, add to directory stack
+                    bool isDirectory = currentNode.Type == FileSystemNodeType.Directory;
+                    if (isDirectory)
                     {
-                        Name = Paths[i],
-                        Pointer = entry.FilePointer,
-                        Size = entry.FileLength,
-                    };
-                    fileIndex++;
+                        var directory = currentNode as DirectoryNode;
+                        Assert.IsTrue(directory != null);
+                        directoryStack.Push(directory);
+                    }
+                }
+
+                // DEBUG
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    string fullName = nodes[i].GetResolvedPath();
+                    Console.WriteLine($"{i} {fullName}");
                 }
             }
-
             // Now that strings are read, we have the final address
+            namesAddressRange.RecordEndAddress(reader);
             this.RecordEndAddress(reader);
 
             // TEMP? Read as block to save out for Dolphin (play via main.dol, etc)
@@ -106,5 +103,7 @@ namespace GameCube.DiskImage
 
             throw new NotImplementedException();
         }
+
+
     }
 }

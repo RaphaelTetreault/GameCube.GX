@@ -11,7 +11,7 @@ namespace GameCube.DiskImage
         [FieldOffset(1)] public ushort GameCode;
         [FieldOffset(3)] public byte CountryCode;
         // Mirror / helpers
-        [FieldOffset(3)] public uint Code;
+        [FieldOffset(0)] public uint Code;
 
         public void Deserialize(EndianBinaryReader reader)
         {

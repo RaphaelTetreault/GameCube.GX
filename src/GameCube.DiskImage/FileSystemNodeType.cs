@@ -1,6 +1,6 @@
 ﻿namespace GameCube.DiskImage
 {
-    public enum FileSystemEntryType : byte
+    public enum FileSystemNodeType : byte
     {
         File,
         Directory,
