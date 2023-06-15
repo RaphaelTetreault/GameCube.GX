@@ -1,6 +1,7 @@
 ﻿using Manifold.IO;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameCube.DiskImage
 {
@@ -15,13 +16,13 @@ namespace GameCube.DiskImage
         private AddressRange namesAddressRange;
 
         public AddressRange AddressRange { get; set; }
-
-        public byte[] Raw => raw;
-
-
-        public FileSystemFileEntry[] FilesEntries { get; set; } = Array.Empty<FileSystemFileEntry>();
         public AddressRange FileSystemNodesAddressRange { get => fileSystemNodesAddressRange; set => fileSystemNodesAddressRange = value; }
         public AddressRange NamesAddressRange { get => namesAddressRange; set => namesAddressRange = value; }
+        public byte[] Raw => raw;
+        public DirectoryNode RootNode { get => root; set => root = value; }
+        public FileSystemNode[] Nodes { get => nodes; }
+        public IEnumerable<FileNode> Files { get => nodes.OfType<FileNode>(); }
+        public IEnumerable<DirectoryNode> Directories { get => nodes.OfType<DirectoryNode>(); }
 
 
         public void Deserialize(EndianBinaryReader reader)
@@ -74,12 +75,15 @@ namespace GameCube.DiskImage
                     }
                 }
 
-                // DEBUG
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    string fullName = nodes[i].GetResolvedPath();
-                    Console.WriteLine($"{i} {fullName}");
-                }
+                // Remove root node from final array
+                nodes = nodes[1..];
+
+                //// DEBUG
+                //for (int i = 0; i < nodes.Length; i++)
+                //{
+                //    string fullName = nodes[i].GetResolvedPath();
+                //    Console.WriteLine($"{i} {fullName}");
+                //}
             }
             // Now that strings are read, we have the final address
             namesAddressRange.RecordEndAddress(reader);
@@ -91,6 +95,8 @@ namespace GameCube.DiskImage
             reader.Read(ref raw, AddressRange.Size);
             // The address should end where it was, otherwise wrong amount of data read.
             Assert.IsTrue(reader.BaseStream.Position == AddressRange.endAddress);
+
+
         }
 
         public void Serialize(EndianBinaryWriter writer)

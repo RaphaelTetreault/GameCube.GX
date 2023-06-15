@@ -42,9 +42,6 @@ namespace GameCube.DiskImage
 
         public void Serialize(EndianBinaryWriter writer)
         {
-            {
-                // type = Type;
-            }
             this.RecordStartAddress(writer);
             {
                 //
