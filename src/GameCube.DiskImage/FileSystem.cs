@@ -1,6 +1,7 @@
 ﻿using Manifold.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace GameCube.DiskImage
@@ -11,22 +12,22 @@ namespace GameCube.DiskImage
     {
         private byte[] raw = Array.Empty<byte>();
         private DirectoryNode root = new();
-        private FileSystemNode[] nodes = Array.Empty<FileSystemNode>();
         private AddressRange fileSystemNodesAddressRange;
         private AddressRange namesAddressRange;
 
         public AddressRange AddressRange { get; set; }
         public AddressRange FileSystemNodesAddressRange { get => fileSystemNodesAddressRange; set => fileSystemNodesAddressRange = value; }
         public AddressRange NamesAddressRange { get => namesAddressRange; set => namesAddressRange = value; }
+        public int FileAlignment { get; set; } = 4; // GC ISO default
         public byte[] Raw => raw;
         public DirectoryNode RootNode { get => root; set => root = value; }
-        public FileSystemNode[] Nodes { get => nodes; }
-        public IEnumerable<FileNode> Files { get => nodes.OfType<FileNode>(); }
-        public IEnumerable<DirectoryNode> Directories { get => nodes.OfType<DirectoryNode>(); }
-
 
         public void Deserialize(EndianBinaryReader reader)
         {
+            // TODO: consider recusive deserialization
+
+            FileSystemNode[] nodes = Array.Empty<FileSystemNode>();
+
             this.RecordStartAddress(reader);
             fileSystemNodesAddressRange.RecordStartAddress(reader);
             {
@@ -96,20 +97,221 @@ namespace GameCube.DiskImage
             // The address should end where it was, otherwise wrong amount of data read.
             Assert.IsTrue(reader.BaseStream.Position == AddressRange.endAddress);
 
-
+            // TODO: include files read in here?
+            ReadAllFiles(reader);
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
-            // TODO:
-            // When implementing, write 2 functions
-            // One to write FS descriptions
-            // Another to write file names.
-            // Why? Because ARC file write needs to rewrite FS descs, not names.
+            // Prepare graph
+            RootNode.AlphabetizeChildrenRecursively();
 
-            throw new NotImplementedException();
+            // Write temp file system
+            this.RecordStartAddress(writer);
+            fileSystemNodesAddressRange.RecordStartAddress(writer);
+            RootNode.SerializeFileSystemRecursively(writer);
+            fileSystemNodesAddressRange.RecordEndAddress(writer);
+
+            // Write file system name table
+            namesAddressRange.RecordStartAddress(writer);
+            RootNode.SerializeNamesRecursively(writer);
+            namesAddressRange.RecordEndAddress(writer);
+            this.RecordEndAddress(writer);
+
+            // Write files
+            WriteAllFiles(writer);
+
+            // Write actual file system
+            Pointer nameTableBasePointer = namesAddressRange.startAddress;
+            RootNode.PrepareFileSystemDataRecursively(nameTableBasePointer, 0);
+            RootNode.SetAsRootNode();
+            //
+            writer.JumpToAddress(fileSystemNodesAddressRange.startAddress);
+            RootNode.SerializeFileSystemRecursively(writer);
+            // Make sure we end at the same spot
+            Assert.IsTrue(fileSystemNodesAddressRange.endAddress == writer.GetPositionAsPointer());
+
+            // Jump back to true end...
+            writer.JumpToAddress(AddressRange.endAddress);
+        }
+
+        /// <summary>
+        ///     Get child node of <paramref name="directoryNode"/> named <paramref name="childDirectoryName"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Returns null if node child node is named <paramref name="childDirectoryName"/>.
+        /// </remarks>
+        /// <param name="directoryNode"></param>
+        /// <param name="childDirectoryName"></param>
+        /// <returns>
+        ///     
+        /// </returns>
+        public DirectoryNode? GetChildDirectoryNode(DirectoryNode directoryNode, string childDirectoryName)
+        {
+            foreach (var childNode in directoryNode.Children)
+            {
+                // Skip files
+                if (childNode is not DirectoryNode)
+                    continue;
+
+                bool isMatch = childNode.Name == childDirectoryName;
+                if (isMatch)
+                    return childNode as DirectoryNode;
+            }
+
+            // No matches
+            return null;
+        }
+
+        public void AddFile(string destinationFilePath, byte[] fileData)
+        {
+            DirectoryNode directoryNode = RootNode;
+            string[] pathSegments = GetPathSegments(destinationFilePath);
+            string[] directories = pathSegments[..^1];
+            string fileName = pathSegments[pathSegments.Length - 1];
+
+            foreach (string directory in directories)
+            {
+                var childNode = GetChildDirectoryNode(directoryNode, directory);
+                // Add new directory node if it does not exist
+                if (childNode == null)
+                {
+                    var newDirectory = new DirectoryNode()
+                    {
+                        Name = directory,
+                    };
+                    childNode = newDirectory;
+                    childNode.Parent = directoryNode;
+                    directoryNode.Children.Add(childNode);
+                }
+                // Set reference for next iteration of this loop
+                directoryNode = childNode;
+            }
+
+            FileNode fileNode = new FileNode()
+            {
+                Name = fileName,
+                Data = fileData,
+            };
+            directoryNode.Children.Add(fileNode);
+        }
+
+        public void AddFiles(IEnumerable<string> sourceFilePaths, string destinationRootPath)
+        {
+            foreach (string sourceFilePath in sourceFilePaths)
+            {
+                if (!File.Exists(sourceFilePath))
+                {
+                    string msg = $"File at path \"{sourceFilePath}\" does not exist.";
+                    throw new FileNotFoundException(msg);
+                }
+
+                string destinationFilePath = sourceFilePath.Replace(destinationRootPath, string.Empty);
+                byte[] fileData = File.ReadAllBytes(sourceFilePath);
+                AddFile(destinationFilePath, fileData);
+            }
+        }
+
+        /// <summary>
+        ///     Remove the node at the specifiec <paramref name="nodePath"/>.
+        /// </summary>
+        /// <param name="nodePath">The path within this Filesystem to remove.</param>
+        /// <returns>
+        ///     True upon successful removal of node, false otherwise.
+        /// </returns>
+        public bool RemoveNode(string nodePath)
+        {
+            // See if directory structure matches request file's
+            DirectoryNode directoryNode = RootNode;
+            string[] pathSegments = GetPathSegments(nodePath);
+            string[] directories = pathSegments[..^1];
+            string nodeName = pathSegments[pathSegments.Length - 1];
+
+            foreach (string directory in directories)
+            {
+                var childNode = GetChildDirectoryNode(directoryNode, directory);
+                // Quit if file does not exist
+                if (childNode == null)
+                    return false;
+            }
+
+            // If we get here, directories exist. Now, check for final node.
+            FileSystemNode? node = null;
+            foreach (var child in directoryNode.Children)
+            {
+                if (child.Name == nodeName)
+                {
+                    node = child;
+                    break;
+                }
+            }
+
+            // Remove node if it exists
+            if (node is not null)
+            {
+                directoryNode.Children.Remove(node);
+                return true;
+            }
+
+            // Indicate failed removal otherwise
+            return false;
+        }
+
+        private string[] GetPathSegments(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                string msg = $"Cannot process null, empty or whitespace-only path.";
+                throw new ArgumentException(msg);
+            }
+
+            // Clean path directory separator, ensure it does not begin with it, too.
+            path = path.Replace('\\', '/');
+            if (path.StartsWith('/'))
+                path = path[1..];
+
+            //
+            string[] pathSegments = path.Split('/');
+            return pathSegments;
         }
 
 
+
+        public FileNode[] GetFiles()
+        {
+            List<FileNode> files = new List<FileNode>();
+            RootNode.GetFiles(files);
+            return files.ToArray();
+        }
+        public DirectoryNode[] GetDirectories()
+        {
+            List<DirectoryNode> directories = new List<DirectoryNode>();
+            RootNode.GetDirectories(directories);
+            return directories.ToArray();
+        }
+        public int GetNodeCount() => RootNode.GetNodeCount();
+        public int GetFileSystemSize() => RootNode.GetNodeCount() * FileSystemNode.StructureSize;
+        public int GetNameTableSize() => RootNode.GetNameTableLength();
+        public int GetFileSystemSizeOnDisk()
+        {
+            int size = GetFileSystemSize() + GetNameTableSize();
+            return size;
+        }
+
+        public void ReadAllFiles(EndianBinaryReader reader)
+        {
+            var files = GetFiles();
+            foreach (var file in files)
+                file.ReadData(reader);
+        }
+        public void WriteAllFiles(EndianBinaryWriter writer)
+        {
+            var files = GetFiles();
+            foreach (var file in files)
+            {
+                writer.AlignTo(FileAlignment);
+                file.WriteData(writer);
+            }
+        }
     }
 }

@@ -9,10 +9,13 @@ namespace GameCube.DiskImage
         IBinaryAddressable,
         IBinarySerializable
     {
+        // CONST    
+        public const int StructureSize = 12; // bytes
+
         // MEMBERS
         internal FileSystemNodeType type; // 1 byte
         internal Offset nameOffset; // 3 bytes
-        internal Pointer filePtrOrDirectoryParentPtr;
+        internal int filePtrOrDirectoryParentOffset;
         internal int fileLengthOrDirectoryLastChildIndex;
 
         // PROPERTIES
@@ -30,7 +33,7 @@ namespace GameCube.DiskImage
             {
                 //
                 uint typeAndFileNameOffset = reader.ReadUInt32();
-                reader.Read(ref filePtrOrDirectoryParentPtr);
+                reader.Read(ref filePtrOrDirectoryParentOffset);
                 reader.Read(ref fileLengthOrDirectoryLastChildIndex);
 
                 // Unpack type and file name offset
@@ -47,17 +50,14 @@ namespace GameCube.DiskImage
                 //
                 uint typePacked = (uint)Type << 24;
                 uint fileNameOffsetPacked = (uint)nameOffset & 0x00FFFFFF;
-                uint typeAndFileNameOffset = typePacked + fileNameOffsetPacked;
+                uint typeAndFileNameOffset = typePacked | fileNameOffsetPacked;
 
                 //
                 writer.Write(typeAndFileNameOffset);
-                writer.Write(filePtrOrDirectoryParentPtr);
+                writer.Write(filePtrOrDirectoryParentOffset);
                 writer.Write(fileLengthOrDirectoryLastChildIndex);
             }
             this.RecordEndAddress(writer);
-
-            // You have not implemented properly handling the above / getting addresses!
-            throw new System.NotImplementedException();
         }
 
 
@@ -85,10 +85,30 @@ namespace GameCube.DiskImage
 
             // Copy values
             node.nameOffset = nameOffset;
-            node.filePtrOrDirectoryParentPtr = filePtrOrDirectoryParentPtr;
+            node.filePtrOrDirectoryParentOffset = filePtrOrDirectoryParentOffset;
             node.fileLengthOrDirectoryLastChildIndex = fileLengthOrDirectoryLastChildIndex;
 
             return node;
+        }
+
+        internal virtual void PrepareFileSystemData(Pointer nameTableBasePointer, int currentIndex)
+        {
+            type = Type;
+            nameOffset = Name.GetPointer() - nameTableBasePointer;
+        }
+
+        public DirectoryNode GetRoot()
+        {
+            if (Parent is not null)
+                return Parent.GetRoot();
+            else
+                return (DirectoryNode)this;
+        }
+
+        public override string ToString()
+        {
+            string name = Name == null ? "null" : Name;
+            return $"{GetType().Name}({name})";
         }
     }
 }
