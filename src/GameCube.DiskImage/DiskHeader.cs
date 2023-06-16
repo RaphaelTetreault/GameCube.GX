@@ -15,7 +15,7 @@ namespace GameCube.DiskImage
     {
         // NOTE: I used Offset to be consisten with YAGCD but unsure
         //  if their use of "offset" is the same as me (offset != pointer).
-        private GameID id;
+        private GameID gameID;
         private ushort makerCode;
         private byte diskID;
         private byte version;
@@ -57,7 +57,7 @@ namespace GameCube.DiskImage
         {
             this.RecordStartAddress(reader);
 
-            reader.Read(ref id);
+            reader.Read(ref gameID);
             reader.Read(ref makerCode);
             reader.Read(ref diskID);
             reader.Read(ref version);

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace GameCube.DiskImage
 {
@@ -24,8 +23,6 @@ namespace GameCube.DiskImage
 
         public void Deserialize(EndianBinaryReader reader)
         {
-            // TODO: consider recusive deserialization
-
             FileSystemNode[] nodes = Array.Empty<FileSystemNode>();
 
             this.RecordStartAddress(reader);
@@ -75,16 +72,6 @@ namespace GameCube.DiskImage
                         directoryStack.Push(directory);
                     }
                 }
-
-                // Remove root node from final array
-                nodes = nodes[1..];
-
-                //// DEBUG
-                //for (int i = 0; i < nodes.Length; i++)
-                //{
-                //    string fullName = nodes[i].GetResolvedPath();
-                //    Console.WriteLine($"{i} {fullName}");
-                //}
             }
             // Now that strings are read, we have the final address
             namesAddressRange.RecordEndAddress(reader);
@@ -146,7 +133,7 @@ namespace GameCube.DiskImage
         /// <returns>
         ///     
         /// </returns>
-        public DirectoryNode? GetChildDirectoryNode(DirectoryNode directoryNode, string childDirectoryName)
+        public static DirectoryNode? GetChildDirectoryNode(DirectoryNode directoryNode, string childDirectoryName)
         {
             foreach (var childNode in directoryNode.Children)
             {
@@ -163,40 +150,68 @@ namespace GameCube.DiskImage
             return null;
         }
 
-        public void AddFile(string destinationFilePath, byte[] fileData)
+        /// <summary>
+        ///     Add a file to the file system.
+        /// </summary>
+        /// <param name="destinationFilePath">The file inside the file system to add.</param>
+        /// <param name="fileData">The data to associate with the supplied file path.</param>
+        /// <param name="overwriteFile">Whether or not to allow overwriting files.</param>
+        /// <exception cref="Exception">Throw if duplicate file is added without <paramref name="overwriteFile"/> permission.</exception>
+        public void AddFile(string destinationFilePath, byte[] fileData, bool overwriteFile = false)
         {
             DirectoryNode directoryNode = RootNode;
-            string[] pathSegments = GetPathSegments(destinationFilePath);
+            string[] pathSegments = DecomposePath(destinationFilePath);
             string[] directories = pathSegments[..^1];
             string fileName = pathSegments[pathSegments.Length - 1];
 
             foreach (string directory in directories)
             {
-                var childNode = GetChildDirectoryNode(directoryNode, directory);
+                var childDirectoryNode = GetChildDirectoryNode(directoryNode, directory);
                 // Add new directory node if it does not exist
-                if (childNode == null)
+                if (childDirectoryNode == null)
                 {
                     var newDirectory = new DirectoryNode()
                     {
                         Name = directory,
                     };
-                    childNode = newDirectory;
-                    childNode.Parent = directoryNode;
-                    directoryNode.Children.Add(childNode);
+                    childDirectoryNode = newDirectory;
+                    directoryNode.AddChild(childDirectoryNode);
                 }
                 // Set reference for next iteration of this loop
-                directoryNode = childNode;
+                directoryNode = childDirectoryNode;
             }
 
+            // Check for file collision
+            if (directoryNode.HasChildNamed(fileName))
+            {
+                if (overwriteFile)
+                {
+                    directoryNode.RemoveChildNamed(fileName);
+                }
+                else
+                {
+                    string msg = $"Cannot add duplicate file \"{destinationFilePath}\".";
+                    throw new FileSystemException(msg);
+                }
+            }
+
+            // Add file
             FileNode fileNode = new FileNode()
             {
                 Name = fileName,
                 Data = fileData,
             };
-            directoryNode.Children.Add(fileNode);
+            directoryNode.AddChild(fileNode);
         }
 
-        public void AddFiles(IEnumerable<string> sourceFilePaths, string destinationRootPath)
+        /// <summary>
+        ///     Add multiple files to the file system.
+        /// </summary>
+        /// <param name="sourceFilePaths">The files on disk to load into the file system.</param>
+        /// <param name="destinationRootPath">The base path to trim <paramref name="sourceFilePaths"/> with which are added to the file system.</param>
+        /// <param name="overwriteFiles">Whether or not to allow overwriting files.</param>
+        /// <exception cref="FileNotFoundException">Thrown if a file in <paramref name="sourceFilePaths"/> could not be laoded.</exception>
+        public void AddFiles(IEnumerable<string> sourceFilePaths, string destinationRootPath, bool overwriteFiles = false)
         {
             foreach (string sourceFilePath in sourceFilePaths)
             {
@@ -208,7 +223,7 @@ namespace GameCube.DiskImage
 
                 string destinationFilePath = sourceFilePath.Replace(destinationRootPath, string.Empty);
                 byte[] fileData = File.ReadAllBytes(sourceFilePath);
-                AddFile(destinationFilePath, fileData);
+                AddFile(destinationFilePath, fileData, overwriteFiles);
             }
         }
 
@@ -223,7 +238,7 @@ namespace GameCube.DiskImage
         {
             // See if directory structure matches request file's
             DirectoryNode directoryNode = RootNode;
-            string[] pathSegments = GetPathSegments(nodePath);
+            string[] pathSegments = DecomposePath(nodePath);
             string[] directories = pathSegments[..^1];
             string nodeName = pathSegments[pathSegments.Length - 1];
 
@@ -257,7 +272,18 @@ namespace GameCube.DiskImage
             return false;
         }
 
-        private string[] GetPathSegments(string path)
+        /// <summary>
+        ///     Decomposes <paramref name="path"/> into directories and name.
+        /// </summary>
+        /// <param name="path">The path to decompose.</param>
+        /// <returns>
+        ///     A string array. Each elements represent part of the source
+        ///     <paramref name="path"/> in order.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        ///     Thrown if <paramref name="path"/> is null, empty, or whitespace.
+        /// </exception>
+        private string[] DecomposePath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -275,35 +301,50 @@ namespace GameCube.DiskImage
             return pathSegments;
         }
 
-
-
-        public FileNode[] GetFiles()
-        {
-            List<FileNode> files = new List<FileNode>();
-            RootNode.GetFiles(files);
-            return files.ToArray();
-        }
+        /// <summary>
+        ///     Retrieves all directories in this file system.
+        /// </summary>
+        /// <returns>
+        ///     Array containing all directory nodes in this file ssytem.
+        /// </returns>
         public DirectoryNode[] GetDirectories()
         {
             List<DirectoryNode> directories = new List<DirectoryNode>();
             RootNode.GetDirectories(directories);
             return directories.ToArray();
         }
-        public int GetNodeCount() => RootNode.GetNodeCount();
-        public int GetFileSystemSize() => RootNode.GetNodeCount() * FileSystemNode.StructureSize;
-        public int GetNameTableSize() => RootNode.GetNameTableLength();
-        public int GetFileSystemSizeOnDisk()
+
+        /// <summary>
+        ///     Retrives all file nodes in this file system.
+        /// </summary>
+        /// <returns>
+        ///     Array containing all file nodes in this file system.
+        /// </returns>
+        public FileNode[] GetFiles()
         {
-            int size = GetFileSystemSize() + GetNameTableSize();
-            return size;
+            List<FileNode> files = new List<FileNode>();
+            RootNode.GetFiles(files);
+            return files.ToArray();
         }
 
+        /// <summary>
+        ///     Reads all files in this file system using the <paramref name="reader"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Data is stored in file nodes.
+        /// </remarks>
+        /// <param name="reader">The reader to read with.</param>
         public void ReadAllFiles(EndianBinaryReader reader)
         {
             var files = GetFiles();
             foreach (var file in files)
                 file.ReadData(reader);
         }
+
+        /// <summary>
+        ///     Writes all file data in this file system using the <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The writer to write to.</param>
         public void WriteAllFiles(EndianBinaryWriter writer)
         {
             var files = GetFiles();
@@ -312,6 +353,17 @@ namespace GameCube.DiskImage
                 writer.AlignTo(FileAlignment);
                 file.WriteData(writer);
             }
+        }
+
+
+        // TODO: maybe get rid of this?
+        public int GetNodeCount() => RootNode.GetNodeCount();
+        public int GetFileSystemSize() => RootNode.GetNodeCount() * FileSystemNode.StructureSize;
+        public int GetFileNameTableSize() => RootNode.GetNameTableLengthRecursively();
+        public int GetFileSystemSizeOnDisk()
+        {
+            int size = GetFileSystemSize() + GetFileNameTableSize();
+            return size;
         }
     }
 }

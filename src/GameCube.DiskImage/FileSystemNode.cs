@@ -60,7 +60,12 @@ namespace GameCube.DiskImage
             this.RecordEndAddress(writer);
         }
 
-
+        /// <summary>
+        ///     Get the full path of this node.
+        /// </summary>
+        /// <returns>
+        ///     The complete path of this node from the root to the element.
+        /// </returns>
         public string GetResolvedPath()
         {
             if (Parent != null)
@@ -73,6 +78,13 @@ namespace GameCube.DiskImage
             return Name;
         }
 
+        /// <summary>
+        ///     Casts node into proper type, FileNode or DirectoryNode.
+        /// </summary>
+        /// <returns>
+        ///     A node but with the proper type.
+        /// </returns>
+        /// <exception cref="System.Exception">Thrown if 'type' is neither file or directory.</exception>
         public FileSystemNode GetNodeAsProperType()
         {
             FileSystemNode node;
@@ -91,18 +103,33 @@ namespace GameCube.DiskImage
             return node;
         }
 
-        internal virtual void PrepareFileSystemData(Pointer nameTableBasePointer, int currentIndex)
-        {
-            type = Type;
-            nameOffset = Name.GetPointer() - nameTableBasePointer;
-        }
-
+        /// <summary>
+        ///     Get the root node of this node.
+        /// </summary>
+        /// <returns>
+        ///     The root node of this node.
+        ///     Returns self if called on root node.
+        /// </returns>
         public DirectoryNode GetRoot()
         {
             if (Parent is not null)
                 return Parent.GetRoot();
             else
                 return (DirectoryNode)this;
+        }
+
+        /// <summary>
+        ///     Prepares this node's pointers and other important serialization data.
+        /// </summary>
+        /// <remarks>
+        ///     This function needs a better name.
+        /// </remarks>
+        /// <param name="nameTableBasePointer">The base pointer of the name table.</param>
+        /// <param name="currenIndex">The current node index of the graph when linearized.</param>
+        internal virtual void PrepareFileSystemData(Pointer nameTableBasePointer, int currentIndex)
+        {
+            type = Type;
+            nameOffset = Name.GetPointer() - nameTableBasePointer;
         }
 
         public override string ToString()

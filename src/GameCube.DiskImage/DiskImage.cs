@@ -4,9 +4,9 @@ using System;
 namespace GameCube.DiskImage
 {
     /// <summary>
-    /// Represents the root GameCube DVD file system.
+    ///     Represents the root GameCube disk image (ISO/ROM).
     /// </summary>
-    public class DVD :
+    public class DiskImage :
         IBinaryFileType,
         IBinarySerializable
     {
@@ -55,6 +55,13 @@ namespace GameCube.DiskImage
             reader.JumpToAddress(diskHeader.MainExecutablePtr);
             int size = diskHeader.FileSystemPointer - diskHeader.MainExecutablePtr;
             reader.Read(ref mainExecutableRaw, size);
+
+            int min = int.MaxValue;
+            foreach (var x in fileSystem.GetFiles())
+            {
+                min = x.FilePointer < min ? x.FilePointer : min;
+            }
+            Console.WriteLine($"min addr: {min:x8}");
         }
 
         public void Serialize(EndianBinaryWriter writer)
