@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Manifold.Core\src\Manifold.IO\Manifold.IO.csproj" />
+    <ProjectReference Include="..\GameCube.DiskImage\GameCube.DiskImage.csproj" />
+    <ProjectReference Include="..\GameCube.GX.Texture\GameCube.GX.Texture.csproj" />
+  </ItemGroup>
+
+</Project>
