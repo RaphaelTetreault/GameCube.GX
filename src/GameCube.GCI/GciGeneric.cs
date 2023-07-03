@@ -2,6 +2,14 @@
 
 namespace GameCube.GCI
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TBinarySerializable"></typeparam>
+    /// <remarks>
+    ///     Override UniqueID (getter).
+    ///     Add well-named accessor to <typeparamref name="TBinarySerializable"/>.
+    /// </remarks>
     public abstract class Gci<TBinarySerializable> :
         IBinaryFileType,
         IBinarySerializable
