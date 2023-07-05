@@ -1,4 +1,5 @@
 ﻿using Manifold.IO;
+using System.Xml;
 
 namespace GameCube.GCI
 {
@@ -13,7 +14,7 @@ namespace GameCube.GCI
     public abstract class Gci<TBinarySerializable> :
         IBinaryFileType,
         IBinarySerializable
-        where TBinarySerializable : IBinarySerializable, new()
+        where TBinarySerializable : IBinarySerializable, IBinaryFileType, new()
     {
         public const Endianness endianness = Endianness.BigEndian;
         public const string Extension = ".gci";
@@ -23,7 +24,7 @@ namespace GameCube.GCI
         public Endianness Endianness => endianness;
         public string FileExtension => Extension;
         public string FileName { get; set; } = string.Empty;
-        public abstract ushort UniqueID { get; }
+        public abstract ushort[] UniqueIDs { get; }
 
 
         public GciHeader header = new();
@@ -32,15 +33,27 @@ namespace GameCube.GCI
 
         public void Deserialize(EndianBinaryReader reader)
         {
-            reader.Read(ref header);
-            reader.Read(ref fileData);
+            // Read header
+            header.Deserialize(reader);
 
-            bool isValidUniqueID = header.UniqueID == UniqueID;
+            // Validate header with regards to expected data
+            bool isValidUniqueID = false;
+            foreach (var uniqueID in UniqueIDs)
+            {
+                if (uniqueID == header.UniqueID)
+                {
+                    isValidUniqueID = true;
+                    break;
+                }
+            }
             if (!isValidUniqueID)
             {
-                string msg = $"Expected {nameof(UniqueID)} of {UniqueID:x4}, is {header.UniqueID:x4}.";
+                string msg = $"{nameof(UniqueIDs)} did not match header value {header.UniqueID:x4}.";
                 throw new InvalidGciException(msg);
             }
+
+            // Read data
+            fileData.Deserialize(reader);
         }
 
         public void Serialize(EndianBinaryWriter writer)
