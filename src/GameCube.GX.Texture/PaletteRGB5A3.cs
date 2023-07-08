@@ -12,7 +12,7 @@ namespace GameCube.GX.Texture
         public override TextureFormat Format => TextureFormat.RGB5A3;
 
 
-        public override void ReadPalette(EndianBinaryReader reader, IndirectEncoding indirectEncoding)
+        public override void ReadPaletteColors(EndianBinaryReader reader, IndirectEncoding indirectEncoding)
         {
             Colors = new TextureColor[indirectEncoding.MaxPaletteSize];
             for (int i = 0; i < Colors.Length; i++)

@@ -77,5 +77,10 @@ namespace GameCube.DiskImage
             return str;
         }
 
+        public override string ToString()
+        {
+            return GetAsString();
+        }
+
     }
 }

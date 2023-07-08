@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Manifold.IO;
+using System;
+using System.Reflection.PortableExecutable;
+using System.Text;
 
 namespace GameCube.GX.Texture
 {
@@ -450,6 +453,32 @@ namespace GameCube.GX.Texture
                     destinationTexture[dx,dy] = sourceTexture[x,y];
                 }
             }
+        }
+    
+        
+        public static Texture ReadDirectColorTexture(EndianBinaryReader reader, TextureFormat directFormat, int pxWidth, int pxHeight)
+        {
+            DirectEncoding encoding = DirectEncoding.GetEncoding(directFormat);
+            int blocksWidth = (int)MathF.Ceiling(pxWidth / encoding.BlockWidth);
+            int blocksHeight = (int)MathF.Ceiling(pxHeight / encoding.BlockHeight);
+            int blocksCount = blocksWidth * blocksHeight;
+            DirectBlock[] directBlocks = encoding.ReadBlocks<DirectBlock>(reader, encoding, blocksCount);
+            Texture texture = FromDirectBlocks(directBlocks, blocksWidth, blocksHeight);
+            return texture;
+        }
+        public static void ReadDirectTexture(EndianBinaryReader reader, ref Texture texture, TextureFormat directFormat, int pxWidth, int pxHeight)
+        {
+            texture = ReadDirectColorTexture(reader, directFormat, pxWidth, pxHeight);
+        }
+        public static Texture ReadIndirectColorTexture(EndianBinaryReader reader, Palette palette, TextureFormat colorIndexFormat, int pxWidth, int pxHeight)
+        {
+            IndirectEncoding encoding = IndirectEncoding.GetEncoding(colorIndexFormat);
+            int blocksWidth = (int)MathF.Ceiling(pxWidth / encoding.BlockWidth);
+            int blocksHeight = (int)MathF.Ceiling(pxHeight / encoding.BlockHeight);
+            int blocksCount = blocksWidth * blocksHeight;
+            IndirectBlock[] blocks = encoding.ReadBlocks<IndirectBlock>(reader, encoding, blocksCount);
+            Texture texture = FromIndirectBlocksAndPalette(blocks, blocksWidth, blocksHeight, palette);
+            return texture;
         }
     }
 }

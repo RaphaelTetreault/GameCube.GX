@@ -10,107 +10,145 @@ namespace GameCube.GCI
     /// <example>
     ///     Primary source of information:
     ///     https://docs.google.com/document/d/1c4a7d6xZ-rnK-E5p7d__6V1qhLxcdOHwAmv-FR8K50s/edit
+    ///     TODO: https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard/GCMemcard.h#L240
     /// </example>
     public class GciHeader :
         IBinarySerializable
     {
         // Const / readonly
+        public const int HeaderSize = 0x40; // FS entry?
+        public const int BlockSize = 0x2000;
         public const int InternalFileNameLength = 32;
-        public const int UnknownDataLength = 9;
         public const int GameTitleLength = 32;
         public const int CommentLength = 60;
-        public readonly System.Text.Encoding AsciiEncoding = System.Text.Encoding.ASCII;
-        public readonly System.Text.Encoding ShiftJisEncoding = System.Text.Encoding.GetEncoding(932); // shift-jis code page
+        public static readonly System.Text.Encoding Windows1252Encoding = System.Text.Encoding.GetEncoding(1252); // Windows-1252
+        public static readonly System.Text.Encoding ShiftJisEncoding = System.Text.Encoding.GetEncoding(932); // shift-jis code page
 
         // Fields
         private GameID gameID;
         private byte const_0xFF;
-        private byte regionCode;
-        private string internalFileName = string.Empty;
-        private uint timestamp;
-        private byte[] unkData = new byte[9];
+        private BannerAndIconFlags bannerAndIconFlags;
+        private string fileName = string.Empty;
+        private uint modificationTime;
+        private Offset imageDataOffset;
+        private ImageFormat imageFormat;
+        private AnimationSpeed animationSpeed;
+        private PermissionFlags permissionFlags;
         private byte copyCount;
-        private ushort memoryCardStartBlock;
-        private int unk0;
-        private int unk1;
+        private ushort firstBlockIndex; // on memory card AFAICT
+        private ushort blockCount;
+        private ushort const_0xFFFF; // FFFF
+        private Offset commentOffset;
+        // We're at 0x40
         private ushort checksum;
         private ushort uniqueID;
         private string gameTitle = string.Empty;
         private string comment = string.Empty;
         private MenuBanner banner = new();
-        private MenuIcon icon = new();
+        private MenuIcon[] icons = Array.Empty<MenuIcon>();
 
         // Accessors
         public GameID GameID { get => gameID; set => gameID = value; }
-        public byte Const_0xFF { get => const_0xFF; set => const_0xFF = value; }
-        public byte RegionCode { get => regionCode; set => regionCode = value; }
-        public string InternalFileName { get => internalFileName; set => internalFileName = value; }
-        public uint Timestamp { get => timestamp; set => timestamp = value; }
-        public byte[] UnkData { get => unkData; set => unkData = value; }
+        public BannerAndIconFlags BannerAndIconFlags { get => bannerAndIconFlags; set => bannerAndIconFlags = value; }
+        public string FileName { get => fileName; set => fileName = value; }
+        /// <summary>
+        ///     Time of file's last modification in seconds since 12am, January 1st, 2000
+        /// </summary>
+        public uint ModificationTime { get => modificationTime; set => modificationTime = value; }
+        //public Offset ImageDataOffset { get => imageDataOffset; set => imageDataOffset = value; }
+        public ImageFormat ImageFormat { get => imageFormat; set => imageFormat = value; }
+        public AnimationSpeed AnimationSpeed { get => animationSpeed; set => animationSpeed = value; }
+        public PermissionFlags PermissionFlags { get => permissionFlags; set => permissionFlags = value; }
         public byte CopyCount { get => copyCount; set => copyCount = value; }
-        public ushort MemoryCardStartBlock { get => memoryCardStartBlock; set => memoryCardStartBlock = value; }
-        public int Unk0 { get => unk0; set => unk0 = value; }
-        public int Unk1 { get => unk1; set => unk1 = value; }
+        public ushort FirstBlockIndex { get => firstBlockIndex; set => firstBlockIndex = value; }
+        public ushort BlockCount { get => blockCount; set => blockCount = value; }
+        //public Offset CommentOffset { get => commentOffset; set => commentOffset = value; }
         public ushort Checksum { get => checksum; set => checksum = value; }
         public ushort UniqueID { get => uniqueID; set => uniqueID = value; }
         public string GameTitle { get => gameTitle; set => gameTitle = value; }
         public string Comment { get => comment; set => comment = value; }
         public MenuBanner Banner { get => banner; set => banner = value; }
-        public MenuIcon Icon { get => icon; set => icon = value; }
+        public MenuIcon[] Icons { get => icons; set => icons = value; }
+
+        public Pointer ImageDataPtr { get; private set; }
+        public Pointer CommentPtr { get; private set; }
+        public int Size => blockCount * BlockSize + HeaderSize;
 
         // Methods
         public void Deserialize(EndianBinaryReader reader)
         {
             reader.Read(ref gameID);
             reader.Read(ref const_0xFF);
-            reader.Read(ref regionCode);
-            reader.Read(ref internalFileName, AsciiEncoding, InternalFileNameLength);
-            reader.Read(ref timestamp);
-            reader.Read(ref unkData, UnknownDataLength);
+            reader.Read(ref bannerAndIconFlags);
+            reader.Read(ref fileName, Windows1252Encoding, InternalFileNameLength);
+            reader.Read(ref modificationTime);
+            reader.Read(ref imageDataOffset);
+            reader.Read(ref imageFormat);
+            reader.Read(ref animationSpeed);
+            reader.Read(ref permissionFlags);
             reader.Read(ref copyCount);
-            reader.Read(ref memoryCardStartBlock);
-            reader.Read(ref unk0);
-            reader.Read(ref unk1);
+            reader.Read(ref firstBlockIndex);
+            reader.Read(ref blockCount);
+            reader.Read(ref const_0xFFFF);
+            reader.Read(ref commentOffset);
+            // Prepare pointers
+            Pointer currentAddress = reader.GetPositionAsPointer();
+            CommentPtr = currentAddress + commentOffset;
+            ImageDataPtr = currentAddress + imageDataOffset;
+
+            // GFZ HEADER?
             reader.Read(ref checksum);
             reader.Read(ref uniqueID);
-            reader.Read(ref gameTitle, AsciiEncoding, GameTitleLength);
-            reader.Read(ref comment, AsciiEncoding, CommentLength);
+            Assert.IsTrue(reader.GetPositionAsPointer() == CommentPtr);
+            reader.Read(ref gameTitle, Windows1252Encoding, GameTitleLength);
+            reader.Read(ref comment, Windows1252Encoding, CommentLength);
+            Assert.IsTrue(reader.GetPositionAsPointer() == ImageDataPtr);
             reader.Read(ref banner);
-            reader.Read(ref icon);
+            reader.Read(ref icons, 1);
+
+            Assert.IsTrue(const_0xFF == 0xFF);
+            Assert.IsTrue(const_0xFFFF == 0xFFFF);
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
             System.Text.Encoding encoding = GetRegionEncoding(gameID);
-            DateTime dateTime = DateTime.Now;
-            SetDefaultComment(dateTime, false);
-            SetTimestamp(dateTime);
+            DateTime now = DateTime.Now;
+            SetDefaultComment(now, false);
+            SetTimestamp(now);
             checksum = ComputeCRC();
 
-            Assert.IsTrue(internalFileName.Length <= InternalFileNameLength);
+            Assert.IsTrue(fileName.Length <= InternalFileNameLength);
             Assert.IsTrue(gameTitle.Length <= GameTitleLength);
             Assert.IsTrue(comment.Length <= CommentLength);
-            Assert.IsTrue(unkData.Length == UnknownDataLength);
+
+            // TODO: ptrs
 
             writer.Write(gameID);
             writer.Write(0xFF);
-            writer.Write(regionCode);
-            writer.Write(internalFileName, encoding, false);
-            writer.WritePadding(0x00, InternalFileNameLength - internalFileName.Length);
-            writer.Write(timestamp);
-            writer.Write(unkData);
+            writer.Write(bannerAndIconFlags);
+            writer.Write(fileName, encoding, false);
+            writer.WritePadding(0x00, InternalFileNameLength - fileName.Length);
+            writer.Write(modificationTime);
+            writer.Write(imageDataOffset);
+            writer.Write(imageFormat);
+            writer.Write(animationSpeed);
+            writer.Write(permissionFlags);
             writer.Write(copyCount);
-            writer.Write(memoryCardStartBlock);
-            writer.Write(unk0);
-            writer.Write(unk1);
+            writer.Write(firstBlockIndex);
+            writer.Write(blockCount);
+            writer.Write(0xFFFF);
+            writer.Write(commentOffset);
+
+            // GFZ HEADER?
             writer.Write(checksum);
             writer.Write(uniqueID);
             writer.Write(gameTitle, encoding, false);
-            writer.WritePadding(0x00, GameTitleLength - internalFileName.Length);
+            writer.WritePadding(0x00, GameTitleLength - fileName.Length);
             writer.Write(comment, encoding, false);
-            writer.WritePadding(0x00, CommentLength - internalFileName.Length);
+            writer.WritePadding(0x00, CommentLength - comment.Length);
             writer.Write(banner);
-            writer.Write(icon);
+            writer.Write(icons);
         }
 
         /// <summary>
@@ -138,9 +176,10 @@ namespace GameCube.GCI
         /// <param name="dateTime">The time to use.</param>
         private void SetTimestamp(DateTime dateTime)
         {
-            DateTimeOffset dateTimeOffset = dateTime;
-            uint unixTime = (uint)dateTimeOffset.ToUnixTimeSeconds();
-            timestamp = unixTime;
+            DateTime epoch = new(2000, 01, 01);
+            TimeSpan timeSpan = dateTime - epoch;
+            uint secondsSince2000 = (uint)timeSpan.Seconds;
+            modificationTime = secondsSince2000;
         }
 
         /// <summary>
@@ -172,7 +211,7 @@ namespace GameCube.GCI
             }
 
             // Set file name
-            InternalFileName = internalFileName;
+            FileName = internalFileName;
 
             // provide info
             return fileNameFits;
@@ -197,12 +236,16 @@ namespace GameCube.GCI
 
                 case 'E':
                 case 'P':
-                    return AsciiEncoding;
+                    return Windows1252Encoding;
 
                 default:
                     throw new NotImplementedException($"Unhandled region code '{gameID.RegionCode}'.");
             }
         }
 
+        public byte[] GetAnimationFrameCount()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
