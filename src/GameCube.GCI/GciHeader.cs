@@ -19,8 +19,6 @@ namespace GameCube.GCI
         public const int HeaderSize = 0x40; // FS entry?
         public const int BlockSize = 0x2000;
         public const int InternalFileNameLength = 32;
-        public const int GameTitleLength = 32;
-        public const int CommentLength = 60;
         public static readonly System.Text.Encoding Windows1252Encoding = System.Text.Encoding.GetEncoding(1252); // Windows-1252
         public static readonly System.Text.Encoding ShiftJisEncoding = System.Text.Encoding.GetEncoding(932); // shift-jis code page
 
@@ -63,12 +61,6 @@ namespace GameCube.GCI
         public ushort FirstBlockIndex { get => firstBlockIndex; set => firstBlockIndex = value; }
         public ushort BlockCount { get => blockCount; set => blockCount = value; }
         //public Offset CommentOffset { get => commentOffset; set => commentOffset = value; }
-        public ushort Checksum { get => checksum; set => checksum = value; }
-        public ushort UniqueID { get => uniqueID; set => uniqueID = value; }
-        public string GameTitle { get => gameTitle; set => gameTitle = value; }
-        public string Comment { get => comment; set => comment = value; }
-        public MenuBanner Banner { get => banner; set => banner = value; }
-        public MenuIcon[] Icons { get => icons; set => icons = value; }
 
         public Pointer ImageDataPtr { get; private set; }
         public Pointer CommentPtr { get; private set; }
@@ -96,33 +88,20 @@ namespace GameCube.GCI
             CommentPtr = currentAddress + commentOffset;
             ImageDataPtr = currentAddress + imageDataOffset;
 
-            // GFZ HEADER?
-            reader.Read(ref checksum);
-            reader.Read(ref uniqueID);
-            Assert.IsTrue(reader.GetPositionAsPointer() == CommentPtr);
-            reader.Read(ref gameTitle, Windows1252Encoding, GameTitleLength);
-            reader.Read(ref comment, Windows1252Encoding, CommentLength);
-            Assert.IsTrue(reader.GetPositionAsPointer() == ImageDataPtr);
-            reader.Read(ref banner);
-            reader.Read(ref icons, 1);
-
             Assert.IsTrue(const_0xFF == 0xFF);
             Assert.IsTrue(const_0xFFFF == 0xFFFF);
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
-            System.Text.Encoding encoding = GetRegionEncoding(gameID);
+            Assert.IsTrue(fileName.Length <= InternalFileNameLength);
+            // TODO: ptrs
+
+            System.Text.Encoding encoding = GetTextEncoding(gameID);
             DateTime now = DateTime.Now;
             SetDefaultComment(now, false);
             SetTimestamp(now);
             checksum = ComputeCRC();
-
-            Assert.IsTrue(fileName.Length <= InternalFileNameLength);
-            Assert.IsTrue(gameTitle.Length <= GameTitleLength);
-            Assert.IsTrue(comment.Length <= CommentLength);
-
-            // TODO: ptrs
 
             writer.Write(gameID);
             writer.Write(0xFF);
@@ -139,16 +118,6 @@ namespace GameCube.GCI
             writer.Write(blockCount);
             writer.Write(0xFFFF);
             writer.Write(commentOffset);
-
-            // GFZ HEADER?
-            writer.Write(checksum);
-            writer.Write(uniqueID);
-            writer.Write(gameTitle, encoding, false);
-            writer.WritePadding(0x00, GameTitleLength - fileName.Length);
-            writer.Write(comment, encoding, false);
-            writer.WritePadding(0x00, CommentLength - comment.Length);
-            writer.Write(banner);
-            writer.Write(icons);
         }
 
         /// <summary>
@@ -227,7 +196,7 @@ namespace GameCube.GCI
         /// <exception cref="NotImplementedException">
         ///     Thrown if <paramref name="gameID"/> region code is not implemented.
         /// </exception>
-        private System.Text.Encoding GetRegionEncoding(GameID gameID)
+        private System.Text.Encoding GetTextEncoding(GameID gameID)
         {
             switch (gameID.RegionCode)
             {
@@ -242,10 +211,40 @@ namespace GameCube.GCI
                     throw new NotImplementedException($"Unhandled region code '{gameID.RegionCode}'.");
             }
         }
-
-        public byte[] GetAnimationFrameCount()
+        public System.Text.Encoding GetTextEncoding()
         {
-            throw new NotImplementedException();
+            return GetTextEncoding(GameID);
         }
+
+        public int[] GetAnimationFrameDurations()
+        {
+            int count = GetAnimationFrameCount();
+            int[] durations = new int[count];
+
+            ushort flags = (ushort)animationSpeed;
+            for (int i = 0; i < durations.Length; i++)
+            {
+                int flagsAtIndex = ((flags >> i) & 0b11);
+                int duration = flags * 4; // 4 frames per each
+                durations[i] = duration;
+            }
+
+            return durations;
+        }
+        public int GetAnimationFrameCount()
+        {
+            int count = 0;
+            ushort flags = (ushort)animationSpeed;
+            for (int i = 0; i < 8; i++)
+            {
+                int flagsAtIndex = (flags >> i) & 0b11;
+                bool hasFlagsAtIndex = flagsAtIndex != 0;
+                if (hasFlagsAtIndex)
+                    count = i;
+            }
+
+            return count;
+        }
+
     }
 }

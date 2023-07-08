@@ -1,9 +1,4 @@
 ﻿using Manifold.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCube.GCI
 {
@@ -11,6 +6,7 @@ namespace GameCube.GCI
         where TBinarySerializable : IBinarySerializable, IBinaryFileType, new()
     {
         public abstract ushort Unknown { get; }
+        public abstract ushort UniqueID { get; }
         public abstract ushort[] UniqueIDs { get; }
 
         public void ValidateUniqueID()
@@ -19,7 +15,7 @@ namespace GameCube.GCI
             bool isValidUniqueID = false;
             foreach (var uniqueID in UniqueIDs)
             {
-                if (uniqueID == header.UniqueID)
+                if (uniqueID == UniqueID)
                 {
                     isValidUniqueID = true;
                     break;
@@ -27,9 +23,21 @@ namespace GameCube.GCI
             }
             if (!isValidUniqueID)
             {
-                string msg = $"{nameof(UniqueIDs)} did not match header value {header.UniqueID:x4}.";
+                string msg = $"{nameof(UniqueIDs)} did not match header value {UniqueID:x4}.";
                 throw new InvalidGciException(msg);
             }
+        }
+
+        public override void Deserialize(EndianBinaryReader reader)
+        {
+            base.Deserialize(reader);
+            ValidateUniqueID();
+        }
+
+        public override void Serialize(EndianBinaryWriter writer)
+        {
+            base.Serialize(writer);
+            ValidateUniqueID();
         }
     }
 }
