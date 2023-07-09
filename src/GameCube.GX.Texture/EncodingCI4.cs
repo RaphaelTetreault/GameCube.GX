@@ -17,8 +17,6 @@ namespace GameCube.GX.Texture
         public override Block ReadBlock(EndianBinaryReader reader)
         {
             var block = new IndirectBlock(BlockWidth, BlockHeight, Format);
-            Assert.IsTrue(block.ColorIndexes.Length % 2 == 0);
-
             // process 2 indexes at a time
             for (int i = 0; i < block.ColorIndexes.Length; i += 2)
             {
@@ -34,8 +32,6 @@ namespace GameCube.GX.Texture
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
             var indirectBlock = block as IndirectBlock;
-            Assert.IsTrue(indirectBlock.ColorIndexes.Length % 2 == 0);
-
             // Process 2 indexes at a time
             for (int i = 0; i < indirectBlock.ColorIndexes.Length; i += 2)
             {

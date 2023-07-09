@@ -48,16 +48,16 @@
         /// </summary>
         /// <param name="width">The width of the block.</param>
         /// <param name="height">The height of the block.</param>
-        /// <param name="format">The texture format of the block.</param>
+        /// <param name="directFormat">The texture format of the block.</param>
         /// <exception cref="System.ArgumentException">
-        ///     Thrown if the <paramref name="format"/> is not a direct colour format.
+        ///     Thrown if the <paramref name="directFormat"/> is not a direct colour format.
         /// </exception>
-        public DirectBlock(byte width, byte height, TextureFormat format) : base(width, height, format)
+        public DirectBlock(byte width, byte height, TextureFormat directFormat) : base(width, height, directFormat)
         {
             int pixelCount = Width * Height;
             Colors = new TextureColor[pixelCount];
 
-            switch (format)
+            switch (directFormat)
             {
                 // Valid direct colour formats
                 case TextureFormat.CMPR:
@@ -73,7 +73,7 @@
                 // Everything else is invalid
                 default:
                     string msg =
-                        $"Invalid {nameof(TextureFormat)} '{format}'. " +
+                        $"Invalid {nameof(TextureFormat)} '{directFormat}'. " +
                         $"The format must be a direct colour format.";
                     throw new System.ArgumentException(msg);
             }

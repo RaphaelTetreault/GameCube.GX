@@ -48,16 +48,16 @@
         /// </summary>
         /// <param name="width">The width of the block.</param>
         /// <param name="height">The height of the block.</param>
-        /// <param name="format">The texture format of the block.</param>
+        /// <param name="indirectFormat">The texture format of the block.</param>
         /// <exception cref="System.ArgumentException">
-        ///     Thrown if the <paramref name="format"/> is not an indirect colour format.
+        ///     Thrown if the <paramref name="indirectFormat"/> is not an indirect colour format.
         /// </exception>
-        public IndirectBlock(byte width, byte height, TextureFormat format) : base(width, height, format)
+        public IndirectBlock(byte width, byte height, TextureFormat indirectFormat) : base(width, height, indirectFormat)
         {
             int pixelCount = Width * Height;
             ColorIndexes = new ushort[pixelCount];
 
-            switch (format)
+            switch (indirectFormat)
             {
                 // Valid indirect colour formats
                 case TextureFormat.CI14X2:
@@ -68,10 +68,17 @@
                 // Everything else is invalid
                 default:
                     string msg =
-                        $"Invalid {nameof(TextureFormat)} '{format}'. " +
+                        $"Invalid {nameof(TextureFormat)} '{indirectFormat}'. " +
                         $"The format must be an indirect colour format.";
                     throw new System.ArgumentException(msg);
             }
         }
+
+        /// <summary>
+        ///     Construct a new direct colour block.
+        /// </summary>
+        /// <param name="indirectEncoding">The direct encoding to use for this block.</param>
+        public IndirectBlock(IndirectEncoding indirectEncoding) : this(indirectEncoding.BlockWidth, indirectEncoding.BlockHeight, indirectEncoding.Format)
+        { }
     }
 }

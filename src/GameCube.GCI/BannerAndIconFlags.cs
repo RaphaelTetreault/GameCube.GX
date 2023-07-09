@@ -7,8 +7,8 @@
 
         // Color information
         IndirectColorCI8 = 1 << 0,
-        DirectColorRGB565   = 1 << 1,
-        InvalidBanner = IndirectColorCI8 | DirectColorRGB565,
+        DirectColorRGB5A3   = 1 << 1,
+        InvalidBanner = IndirectColorCI8 | DirectColorRGB5A3,
 
         // Animation flags
         // Unset is loop, set it ping-pong (AKA seesaw)

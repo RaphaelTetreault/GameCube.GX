@@ -1,7 +1,8 @@
 ﻿using Manifold.IO;
 using System;
-using System.Reflection.PortableExecutable;
-using System.Text;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing.Processors.Quantization;
 
 namespace GameCube.GX.Texture
 {
@@ -122,36 +123,70 @@ namespace GameCube.GX.Texture
         }
 
 
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="directEncoding"></param>
-        /// <returns>
-        ///     
-        /// </returns>
-        public static DirectBlock[] CreateTextureDirectColorBlocks(Texture sourceTexture, DirectEncoding directEncoding, out int blocksCountHorizontal, out int blocksCountVertical)
+
+        public static DirectBlock[] CreateDirectColorBlocksFromTexture(Texture texture, DirectEncoding directEncoding, out int blocksCountHorizontal, out int blocksCountVertical)
         {
-            blocksCountHorizontal = sourceTexture.Width / directEncoding.BlockWidth;
-            blocksCountVertical = sourceTexture.Height / directEncoding.BlockHeight;
+            // Create blocks array. Each block will contain pixel data for texture.
+            blocksCountHorizontal = directEncoding.GetHorizontalBlocksCountToEncode(texture);
+            blocksCountVertical = directEncoding.GetVerticalBlocksCountToEncode(texture);
             int blocksCount = blocksCountHorizontal * blocksCountVertical;
             DirectBlock[] blocks = new DirectBlock[blocksCount];
 
-            for (int v = 0; v < blocksCountVertical; v++)
+            // Copy colors from array texture into blocks
+            TextureIndexToBlockIndex colorsToBlock = (int textureOriginX, int textureOriginY, int blockIndex) =>
             {
-                int originY = v * directEncoding.BlockHeight;
-                for (int h = 0; h < blocksCountHorizontal; h++)
-                {
-                    int originX = h * directEncoding.BlockWidth;
-                    int blockIndex = h + v * blocksCountHorizontal;
-                    blocks[blockIndex] = RegionToDirectBlock(sourceTexture, directEncoding, originX, originY);
-                }
-            }
+                blocks[blockIndex] = RegionToDirectBlock(texture, directEncoding, textureOriginX, textureOriginY);
+            };
+            LoopTextureIndexToBlockIndex(blocksCountHorizontal, blocksCountVertical, directEncoding.BlockWidth, directEncoding.BlockHeight, colorsToBlock);
 
             return blocks;
         }
+        public static DirectBlock[] CreateDirectColorBlocksFromTexture(Texture texture, DirectEncoding directEncoding)
+            => CreateDirectColorBlocksFromTexture(texture, directEncoding, out _, out _);
 
-        public static DirectBlock[] CreateTextureDirectColorBlocks(Texture sourceTexture, DirectEncoding directEncoding)
-            => CreateTextureDirectColorBlocks(sourceTexture, directEncoding, out _, out _);
+        public static IndirectBlock[] CreateIndirectColorBlocksAndPaletteFromTexture(Texture texture, IndirectEncoding indirectEncoding, TextureFormat paletteFormat, out Palette palette, out int blocksCountHorizontal, out int blocksCountVertical)
+        {
+            // Create blocks array. Each block will contain indexes for image.
+            blocksCountHorizontal = indirectEncoding.GetHorizontalBlocksCountToEncode(texture);
+            blocksCountVertical = indirectEncoding.GetVerticalBlocksCountToEncode(texture);
+            int blocksCount = blocksCountHorizontal * blocksCountVertical;
+            IndirectBlock[] blocks = new IndirectBlock[blocksCount];
+
+            // Create palette
+            ToIndexesAndPalette256(texture, indirectEncoding, paletteFormat, out ushort[] indexes, out palette);
+
+            // Copy indexes from array (indexes generated from texture) into blocks
+            TextureIndexToBlockIndex indexesToBlock = (int textureOriginX, int textureOriginY, int blockIndex) =>
+            {
+                blocks[blockIndex] = RegionToIndirectBlock(indexes, texture.Width, texture.Height, indirectEncoding, textureOriginX, textureOriginY);
+            };
+            LoopTextureIndexToBlockIndex(blocksCountHorizontal, blocksCountVertical, indirectEncoding.BlockWidth, indirectEncoding.BlockHeight, indexesToBlock);
+
+            return blocks;
+        }
+        public static void CreateIndirectColorBlocksAndPaletteFromTexture(Texture texture, TextureFormat indirectFormat, out IndirectBlock[] blocks, TextureFormat paletteFormat, out Palette palette)
+        {
+            IndirectEncoding encoding = IndirectEncoding.GetEncoding(indirectFormat);
+            blocks = Texture.CreateIndirectColorBlocksAndPaletteFromTexture(texture, encoding, paletteFormat, out palette, out _, out _);
+        }
+
+
+        // NEW IDEA: pass in delegate which gives the proper indexes for doing: tex[x,y] => block[x,y]
+        private delegate void TextureIndexToBlockIndex(int originX, int originY, int blockIndex);
+        private static void LoopTextureIndexToBlockIndex(int blockCountHorizontal, int blockCountVertical, int blockWidth, int blockHeight, TextureIndexToBlockIndex action)
+        {
+            for (int v = 0; v < blockCountVertical; v++)
+            {
+                int originY = v * blockHeight;
+                for (int h = 0; h < blockCountHorizontal; h++)
+                {
+                    int originX = h * blockWidth;
+                    int blockIndex = h + v * blockCountHorizontal;
+                    action(originX, originY, blockIndex);
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -165,7 +200,7 @@ namespace GameCube.GX.Texture
         ///     A new block which contains the region sampled from <paramref name="sourceTexture"/>. The width
         ///     and height of the block depends on the <paramref name="directEncoding"/> used.
         /// </returns>
-        public static DirectBlock RegionToDirectBlock(Texture sourceTexture, DirectEncoding directEncoding, int originX, int originY)
+        private static DirectBlock RegionToDirectBlock(Texture sourceTexture, DirectEncoding directEncoding, int originX, int originY)
         {
             var block = new DirectBlock(directEncoding);
 
@@ -186,6 +221,104 @@ namespace GameCube.GX.Texture
 
             return block;
         }
+        private static IndirectBlock RegionToIndirectBlock(ushort[] indexes, int width, int height, IndirectEncoding indirectEncoding, int originX, int originY)
+        {
+            var block = new IndirectBlock(indirectEncoding);
+
+            // Figure out how many pixels to copy over. On smaller textures (eg: 4x2), outside region is black.
+            int nPixelsX = Math.Min(indirectEncoding.BlockWidth, width - originX);
+            int nPixelsY = Math.Min(indirectEncoding.BlockHeight, height - originY);
+
+            // Copy texture region into block
+            for (int y = 0; y < nPixelsY; y++)
+            {
+                int sourceY = originY * width + y;
+                for (int x = 0; x < nPixelsX; x++)
+                {
+                    int sourceX = originX + x;
+                    int source = sourceX + sourceY;
+                    block[x, y] = indexes[source];
+                }
+            }
+
+            return block;
+        }
+
+        private static Image<Rgba32> ToImage(Texture sourceTexture)
+        {
+            Image<Rgba32> image = new Image<Rgba32>(sourceTexture.Width, sourceTexture.Height);
+
+            for (int y = 0; y < sourceTexture.Height; y++)
+            {
+                for (int x = 0; x < sourceTexture.Width; x++)
+                {
+                    TextureColor pixel = sourceTexture[x, y];
+                    image[x, y] = new Rgba32(pixel.r, pixel.g, pixel.b, pixel.a);
+                }
+            }
+
+            return image;
+        }
+        private static void ToIndexesAndPalette256(Texture sourceTexture, IndirectEncoding indirectEncoding, TextureFormat paletteFormat, out ushort[] indexes, out Palette palette)
+        {
+            // Validate encoder
+            switch (indirectEncoding.Format)
+            {
+                // Valid formats
+                case TextureFormat.CI4:
+                case TextureFormat.CI8:
+                    break;
+
+                // Not yet supported
+                case TextureFormat.CI14X2:
+                {
+                    string msg = $"CI14X2 format is not yet supported. Use CI8 if possible.";
+                    throw new NotImplementedException(msg);
+                }
+
+                // Everything else
+                default:
+                {
+                    string msg = $"Type {indirectEncoding.Format} is not a valid indexed format.";
+                    throw new ArgumentException(msg);
+                }
+            };
+
+            // init some settings
+            var configuration = new Configuration() { };
+            var quantizerOptions = new QuantizerOptions()
+            {
+                MaxColors = indirectEncoding.MaxPaletteSize,
+            }; // See also: dithers
+            var quantizer = new WuQuantizer(quantizerOptions);
+            var rgba32Quantizer = quantizer.CreatePixelSpecificQuantizer<Rgba32>(configuration);
+
+            // build palette and indices
+            var image = ToImage(sourceTexture);
+            var frame = image.Frames.RootFrame;
+            var indexedImageFrame = rgba32Quantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
+
+            // PALETTE
+            Rgba32[] paletteColors = indexedImageFrame.Palette.ToArray();
+            palette = Palette.CreatePalette(paletteFormat);
+            palette.SetColors(paletteColors);
+
+            // INDEXES
+            int stride = image.Width;
+            int capacity = image.Width * image.Height;
+            indexes = new ushort[capacity];
+            for (int y = 0; y < image.Height; y++)
+            {
+                int originY = y * stride;
+                var row = indexedImageFrame.GetWritablePixelRowSpanUnsafe(y);
+                for (int x = 0; x < image.Width; x++)
+                {
+                    int index = x + originY;
+                    indexes[index] = row[x];
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -450,12 +583,12 @@ namespace GameCube.GX.Texture
                 for (int x = 0; x < sourceTexture.Width; x++)
                 {
                     int dx = destinationOriginX + x; ;
-                    destinationTexture[dx,dy] = sourceTexture[x,y];
+                    destinationTexture[dx, dy] = sourceTexture[x, y];
                 }
             }
         }
-    
-        
+
+        // 2023/07/08: make simple functions for read/write
         public static Texture ReadDirectColorTexture(EndianBinaryReader reader, TextureFormat directFormat, int pxWidth, int pxHeight)
         {
             DirectEncoding encoding = DirectEncoding.GetEncoding(directFormat);
@@ -465,10 +598,6 @@ namespace GameCube.GX.Texture
             DirectBlock[] directBlocks = encoding.ReadBlocks<DirectBlock>(reader, encoding, blocksCount);
             Texture texture = FromDirectBlocks(directBlocks, blocksWidth, blocksHeight);
             return texture;
-        }
-        public static void ReadDirectTexture(EndianBinaryReader reader, ref Texture texture, TextureFormat directFormat, int pxWidth, int pxHeight)
-        {
-            texture = ReadDirectColorTexture(reader, directFormat, pxWidth, pxHeight);
         }
         public static Texture ReadIndirectColorTexture(EndianBinaryReader reader, Palette palette, TextureFormat colorIndexFormat, int pxWidth, int pxHeight)
         {
@@ -480,5 +609,21 @@ namespace GameCube.GX.Texture
             Texture texture = FromIndirectBlocksAndPalette(blocks, blocksWidth, blocksHeight, palette);
             return texture;
         }
+
+        public static void WriteDirectColorTexture(EndianBinaryWriter writer, Texture texture, TextureFormat directFormat)
+        {
+            DirectEncoding encoding = DirectEncoding.GetEncoding(directFormat);
+            DirectBlock[] blocks = CreateDirectColorBlocksFromTexture(texture, encoding);
+            encoding.WriteBlocks(writer, blocks);
+        }
+
+        public static void WriteIndirectColorTexture(EndianBinaryWriter writer, Texture texture, TextureFormat indirectFormat, TextureFormat paletteFormat)
+        {
+            IndirectEncoding encoding = IndirectEncoding.GetEncoding(indirectFormat);
+            IndirectBlock[] blocks = CreateIndirectColorBlocksAndPaletteFromTexture(texture, encoding, paletteFormat, out Palette palette, out _, out _);
+            palette.WritePalette(writer, encoding);
+            encoding.WriteBlocks(writer, blocks);
+        }
+
     }
 }

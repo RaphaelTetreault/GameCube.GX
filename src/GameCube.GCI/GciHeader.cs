@@ -37,13 +37,6 @@ namespace GameCube.GCI
         private ushort blockCount;
         private ushort const_0xFFFF; // FFFF
         private Offset commentOffset;
-        // We're at 0x40
-        private ushort checksum;
-        private ushort uniqueID;
-        private string gameTitle = string.Empty;
-        private string comment = string.Empty;
-        private MenuBanner banner = new();
-        private MenuIcon[] icons = Array.Empty<MenuIcon>();
 
         // Accessors
         public GameID GameID { get => gameID; set => gameID = value; }
@@ -61,6 +54,7 @@ namespace GameCube.GCI
         public ushort FirstBlockIndex { get => firstBlockIndex; set => firstBlockIndex = value; }
         public ushort BlockCount { get => blockCount; set => blockCount = value; }
         //public Offset CommentOffset { get => commentOffset; set => commentOffset = value; }
+        public DateTime SaveTime { get; private set; }
 
         public Pointer ImageDataPtr { get; private set; }
         public Pointer CommentPtr { get; private set; }
@@ -96,17 +90,12 @@ namespace GameCube.GCI
         {
             Assert.IsTrue(fileName.Length <= InternalFileNameLength);
             // TODO: ptrs
-
-            System.Text.Encoding encoding = GetTextEncoding(gameID);
-            DateTime now = DateTime.Now;
-            SetDefaultComment(now, false);
-            SetTimestamp(now);
-            checksum = ComputeCRC();
+            SetTime(DateTime.Now);
 
             writer.Write(gameID);
             writer.Write(0xFF);
             writer.Write(bannerAndIconFlags);
-            writer.Write(fileName, encoding, false);
+            writer.Write(fileName, GetTextEncoding(gameID), false);
             writer.WritePadding(0x00, InternalFileNameLength - fileName.Length);
             writer.Write(modificationTime);
             writer.Write(imageDataOffset);
@@ -121,34 +110,33 @@ namespace GameCube.GCI
         }
 
         /// <summary>
-        ///     Sets a default comment if the comment string is null or empty.
+        /// 
         /// </summary>
-        /// <param name="dateTime"></param>
-        /// <param name="overwriteComment"></param>
-        private void SetDefaultComment(DateTime dateTime, bool overwriteComment = false)
+        /// <returns></returns>
+        public string GetDefaultComment()
         {
-            bool hasComment = !string.IsNullOrEmpty(comment);
-            if (hasComment || !overwriteComment)
-                return;
-
-            string time = dateTime.ToString("yyyy/MM/dd hh:mm.ss");
+            string time = SaveTime.ToString("yyyy/MM/dd hh:mm.ss");
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
             string name = System.Reflection.Assembly.GetEntryAssembly().GetName().Name;
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             name = name is null ? string.Empty : name;
-            comment = $"Created by {name} at {time}.";
+            string comment = $"Created by {name} at {time}.";
+
+            return comment;
         }
 
         /// <summary>
         ///     Sets the header timestamp to the provided <paramref name="dateTime"/>.
         /// </summary>
         /// <param name="dateTime">The time to use.</param>
-        private void SetTimestamp(DateTime dateTime)
+        private void SetTime(DateTime dateTime)
         {
             DateTime epoch = new(2000, 01, 01);
             TimeSpan timeSpan = dateTime - epoch;
             uint secondsSince2000 = (uint)timeSpan.Seconds;
             modificationTime = secondsSince2000;
+            //
+            SaveTime = dateTime;
         }
 
         /// <summary>

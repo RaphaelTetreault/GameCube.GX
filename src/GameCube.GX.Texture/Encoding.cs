@@ -182,11 +182,36 @@ namespace GameCube.GX.Texture
         /// </returns>
         public static int GetTotalBlocksToEncode(int widthPixels, int heightPixels, int blockWidth, int blockHeight)
         {
-            int nBlocksWidth = (int)Math.Ceiling(widthPixels / (float)blockWidth);
-            int nBlocksHeight = (int)Math.Ceiling(heightPixels / (float)blockHeight);
+            int nBlocksWidth = GetHorizontalBlocksCountToEncode(widthPixels, blockWidth);
+            int nBlocksHeight = GetVerticalBlocksCountToEncode(heightPixels, blockHeight);
             int totalBlocks = nBlocksWidth * nBlocksHeight;
             return totalBlocks;
         }
+        public static int GetTotalBlocksToEncode(Texture texture, Encoding encoding)
+            => GetTotalBlocksToEncode(texture.Width, texture.Height, encoding.BlockWidth, encoding.BlockHeight);
+        public int GetTotalBlocksToEncode(Texture texture)
+            => GetTotalBlocksToEncode(texture.Width, texture.Height, BlockWidth, BlockHeight);
+
+
+        public static int GetHorizontalBlocksCountToEncode(int widthPixels, int blockWidth)
+        {
+            int nBlocksWidth = (int)Math.Ceiling(widthPixels / (float)blockWidth);
+            return nBlocksWidth;
+        }
+        public static int GetHorizontalBlocksCountToEncode(Texture texture, Encoding encoding)
+            => GetHorizontalBlocksCountToEncode(texture.Width, encoding.BlockWidth);
+        public int GetHorizontalBlocksCountToEncode(Texture texture)
+            => GetHorizontalBlocksCountToEncode(texture.Width, BlockWidth);
+
+        public static int GetVerticalBlocksCountToEncode(int heightPixels, int blockHeight)
+        {
+            int nBlocksHeight = (int)Math.Ceiling(heightPixels / (float)blockHeight);
+            return nBlocksHeight;
+        }
+        public static int GetVerticalBlocksCountToEncode(Texture texture, Encoding encoding)
+            => GetVerticalBlocksCountToEncode(texture.Height, encoding.BlockHeight);
+        public int GetVerticalBlocksCountToEncode(Texture texture)
+            => GetVerticalBlocksCountToEncode(texture.Height, BlockHeight);
 
     }
 }

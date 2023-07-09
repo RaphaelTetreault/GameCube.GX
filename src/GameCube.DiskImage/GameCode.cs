@@ -60,7 +60,6 @@ namespace GameCube.DiskImage
             set => characters[i] = Convert.ToByte(value);
         }
 
-
         //
         public void Deserialize(EndianBinaryReader reader)
         {
