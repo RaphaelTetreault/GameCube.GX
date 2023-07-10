@@ -7,14 +7,16 @@ namespace GameCube.DiskImage
     public struct GameID :
         IBinarySerializable
     {
-        //
+        // CONSTANTS
         private const int ByteLength = 6;
         private readonly Encoding encoding = Encoding.ASCII;
 
-        //
+
+        // FIELDS
         private byte[] characters;
 
-        //
+
+        // PROPERTIES
         public char ConsoleCode
         {
             get => this[0];
@@ -46,27 +48,27 @@ namespace GameCube.DiskImage
         public byte[] CharactersRaw => characters;
 
 
-        //
+        // CONSTRUCTORS
         public GameID()
         {
             characters = new byte[ByteLength];
         }
 
 
-        //
+        // INDEXERS
         public char this[int i]
         {
             get => Convert.ToChar(characters[i]);
             set => characters[i] = Convert.ToByte(value);
         }
 
-        //
+
+        // METHODS
         public void Deserialize(EndianBinaryReader reader)
         {
             reader.Read(ref characters, ByteLength);
             ThrowIfInvalidRegion();
         }
-
         public void Serialize(EndianBinaryWriter writer)
         {
             ThrowIfInvalidRegion();
@@ -77,12 +79,10 @@ namespace GameCube.DiskImage
             var str = encoding.GetString(characters);
             return str;
         }
-
         public override string ToString()
         {
             return GetAsString();
         }
-
         public static char GetRegionChar(Region region)
         {
             switch (region)
