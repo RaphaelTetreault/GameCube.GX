@@ -1,5 +1,6 @@
 ﻿using GameCube.GX.Texture;
 using Manifold.IO;
+using System.Reflection;
 
 namespace GameCube.GCI
 {
@@ -23,12 +24,16 @@ namespace GameCube.GCI
         public const int BannerHeight = 32;
         public const int IconWidth = 32;
         public const int IconHeight = 32;
+        public const int MaxIcons = 8;
+        public const int MaxFileNameLength = 32;
 
+        private string fileName = string.Empty;
 
         public Endianness Endianness => endianness;
         public string FileExtension => Extension;
-        public string FileName { get; set; } = string.Empty;
-
+        public string FileName { get => fileName; set => SetFileName(value); }
+        public bool IsTextureCI8 => GetTextureFormat() == TextureFormat.CI8;
+        public bool IsTextureRGB5A3 => GetTextureFormat() == TextureFormat.RGB5A3;
 
         public Texture Banner { get; protected set; } = new();
         public abstract string Comment { get; set; }
@@ -70,26 +75,59 @@ namespace GameCube.GCI
         }
 
 
-        public void SetFileData()
+        public void SetFileData(TBinarySerializable fileData)
         {
-            throw new NotImplementedException();
+            FileData = fileData;
         }
-        public void SetBanner()
+        public void SetBanner(Texture banner)
         {
-            throw new NotImplementedException();
+            ThrowIfInvalidSize(banner, BannerWidth, BannerHeight);
+            Banner = banner;
         }
-        public void SetIcons()
+        public void SetIcons(Texture[] icons)
         {
-            throw new NotImplementedException();
+            // Encure arrays is not too large
+            bool tooManyIcons = icons.Length > MaxIcons;
+            if (tooManyIcons)
+            {
+                string msg = $"Too many icons to assign. Provided {icons.Length}, max is {MaxIcons}.";
+                throw new ArgumentException(msg);
+            }
+
+            // Ensure each icon is the correct size
+            for (int i = 0; i < icons.Length; i++)
+            {
+                Texture icon = icons[i];
+                ThrowIfInvalidSize(icon, IconWidth, IconHeight);
+            }
+
+            Icons = icons;
         }
-        public void SetFileName()
+        public void SetFileName(string fileName)
         {
-            throw new NotImplementedException();
+            bool isTooLong = fileName.Length > MaxFileNameLength;
+            if (isTooLong)
+            {
+                string msg = $"File name provided is too large. Length is {fileName.Length}, max is {MaxFileNameLength}.";
+                throw new ArgumentException(msg);
+            }
+
+            this.fileName = fileName;
         }
 
-
-        public bool IsTextureCI8 => GetTextureFormat() == TextureFormat.CI8;
-        public bool IsTextureRGB5A3 => GetTextureFormat() == TextureFormat.RGB5A3;
+        protected void ThrowIfInvalidSize(Texture texture, int width, int height)
+        {
+            bool hasInvalidWidth = texture.Width != width;
+            bool hasInvalidHeight = texture.Height != height;
+            bool hasInvalidDimensions = hasInvalidWidth || hasInvalidHeight;
+            if (hasInvalidDimensions)
+            {
+                string msg =
+                    $"{GetType().Name} has invalid dimensions ({texture.Width},{texture.Height}). " +
+                    $"{GetType().Name} must have a dimension of exactly ({width}, {height}).";
+                throw new ArgumentException(msg);
+            }
+        }
 
         private TextureFormat GetTextureFormat()
         {
@@ -105,7 +143,7 @@ namespace GameCube.GCI
             TextureFormat textureFormat = isDirectRGB5A3 ? DirectFormat : IndirectFormat;
             return textureFormat;
         }
-        private Texture ReadDirectColorTexture(EndianBinaryReader reader, int width, int height)
+        private static Texture ReadDirectColorTexture(EndianBinaryReader reader, int width, int height)
         {
             Texture texture = Texture.ReadDirectColorTexture(reader, DirectFormat, width, height);
             return texture;
@@ -120,7 +158,7 @@ namespace GameCube.GCI
             palette.ReadPaletteColors(reader, IndirectFormat);
             return palette;
         }
-        private Texture ReadIndirectColorTexture(EndianBinaryReader reader, Palette palette, int width, int height)
+        private static Texture ReadIndirectColorTexture(EndianBinaryReader reader, Palette palette, int width, int height)
         {
             Texture texture = Texture.ReadIndirectColorTexture(reader, palette, IndirectFormat, width, height);
             return texture;

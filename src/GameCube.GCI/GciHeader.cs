@@ -23,7 +23,7 @@ namespace GameCube.GCI
         public static readonly System.Text.Encoding ShiftJisEncoding = System.Text.Encoding.GetEncoding(932); // shift-jis code page
 
         // Fields
-        private GameID gameID;
+        private GameID gameID = new();
         private byte const_0xFF;
         private BannerAndIconFlags bannerAndIconFlags;
         private string fileName = string.Empty;

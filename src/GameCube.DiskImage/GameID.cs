@@ -64,10 +64,12 @@ namespace GameCube.DiskImage
         public void Deserialize(EndianBinaryReader reader)
         {
             reader.Read(ref characters, ByteLength);
+            ThrowIfInvalidRegion();
         }
 
         public void Serialize(EndianBinaryWriter writer)
         {
+            ThrowIfInvalidRegion();
             writer.Write(characters);
         }
         public string GetAsString()
@@ -81,5 +83,38 @@ namespace GameCube.DiskImage
             return GetAsString();
         }
 
+        public static char GetRegionChar(Region region)
+        {
+            switch (region)
+            {
+                // TODO: Datel 'X', region free?
+                case Region.NorthAmerica: return 'E';
+                case Region.Europe: return 'P';
+                case Region.Japan: return 'J';
+                default: return '\0';
+            }
+        }
+        private bool IsValidRegionChar()
+        {
+            switch (RegionCode)
+            {
+                case 'E':
+                case 'J':
+                case 'P':
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+        public void ThrowIfInvalidRegion()
+        {
+            bool isInvalidRegion = IsValidRegionChar();
+            if (!isInvalidRegion)
+            {
+                string msg = $"Invalid region code '{RegionCode}'.";
+                throw new NotImplementedException(msg);
+            }
+        }
     }
 }
