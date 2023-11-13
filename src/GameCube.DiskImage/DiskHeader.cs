@@ -13,7 +13,7 @@ namespace GameCube.DiskImage
         IBinaryAddressable,
         IBinarySerializable
     {
-        // NOTE: I used Offset to be consisten with YAGCD but unsure
+        // NOTE: I used Offset to be consistent with YAGCD but unsure
         //  if their use of "offset" is the same as me (offset != pointer).
         private GameID gameID;
         private ushort makerCode;

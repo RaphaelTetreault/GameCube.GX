@@ -1,4 +1,10 @@
-﻿using Manifold.IO;
+﻿// Resources
+// https://www.gc-forever.com/yagcd/chap14.html#sec14.1
+// https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard/GCMemcard.h#L240
+
+
+
+using Manifold.IO;
 using System;
 
 namespace GameCube.DiskImage

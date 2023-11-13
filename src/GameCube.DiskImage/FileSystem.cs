@@ -315,7 +315,7 @@ namespace GameCube.DiskImage
         }
 
         /// <summary>
-        ///     Retrives all file nodes in this file system.
+        ///     Retrieves all file nodes in this file system.
         /// </summary>
         /// <returns>
         ///     Array containing all file nodes in this file system.
