@@ -17,12 +17,12 @@ namespace GameCube.DiskImage
         IBinarySerializable
     {
         // Proper file structure
-        private DiskHeader diskHeader;
-        private DiskHeaderInformation diskHeaderInformation;
-        private Apploader apploader;
-        private FileSystem fileSystem;
+        private DiskHeader? diskHeader;
+        private DiskHeaderInformation? diskHeaderInformation;
+        private Apploader? apploader;
+        private FileSystem? fileSystem;
+        private byte[] mainExecutableRaw = Array.Empty<byte>();
         //private MainExecutable mainExecutable;
-        private byte[] mainExecutableRaw;
 
         public const Endianness endianness = Endianness.BigEndian;
 
@@ -31,12 +31,12 @@ namespace GameCube.DiskImage
         public string FileExtension => ".iso";
         public string FileName { get; set; } = string.Empty;
 
-        public Apploader Apploader { get => apploader; set => apploader = value; }
-        public DiskHeader DiskHeader { get => diskHeader; set => diskHeader = value; }
-        public DiskHeaderInformation DiskHeaderInformation { get => diskHeaderInformation; set => diskHeaderInformation = value; }
-        public FileSystem FileSystem { get => fileSystem; set => fileSystem = value; }
-        //public MainExecutable MainExecutable { get => mainExecutable; set => mainExecutable = value; }
+        public Apploader? Apploader { get => apploader; set => apploader = value; }
+        public DiskHeader? DiskHeader { get => diskHeader; set => diskHeader = value; }
+        public DiskHeaderInformation? DiskHeaderInformation { get => diskHeaderInformation; set => diskHeaderInformation = value; }
+        public FileSystem? FileSystem { get => fileSystem; set => fileSystem = value; }
         public byte[] MainExecutableRaw => mainExecutableRaw;
+        //public MainExecutable MainExecutable { get => mainExecutable; set => mainExecutable = value; }
 
         public void Deserialize(EndianBinaryReader reader)
         {
@@ -61,13 +61,6 @@ namespace GameCube.DiskImage
             reader.JumpToAddress(diskHeader.MainExecutablePtr);
             int size = diskHeader.FileSystemPointer - diskHeader.MainExecutablePtr;
             reader.Read(ref mainExecutableRaw, size);
-
-            int min = int.MaxValue;
-            foreach (var x in fileSystem.GetFiles())
-            {
-                min = x.FilePointer < min ? x.FilePointer : min;
-            }
-            Console.WriteLine($"min addr: {min:x8}");
         }
 
         public void Serialize(EndianBinaryWriter writer)
