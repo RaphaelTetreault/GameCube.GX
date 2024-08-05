@@ -3,8 +3,7 @@ using Manifold.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Unity.Mathematics;
-
+using System.Numerics;
 
 namespace GameCube.GX
 {
@@ -32,20 +31,20 @@ namespace GameCube.GX
         public byte[] tex5_mtx_idx;
         public byte[] tex6_mtx_idx;
         public byte[] tex7_mtx_idx;
-        public float3[] pos;
-        public float3[] nrm; // normal
-        public float3[] bnm; // binormal
-        public float3[] tan; // tangent
+        public Vector3[] pos;
+        public Vector3[] nrm; // normal
+        public Vector3[] bnm; // binormal
+        public Vector3[] tan; // tangent
         public GXColor[] clr0;
         public GXColor[] clr1;
-        public float2[] tex0;
-        public float2[] tex1;
-        public float2[] tex2;
-        public float2[] tex3;
-        public float2[] tex4;
-        public float2[] tex5;
-        public float2[] tex6;
-        public float2[] tex7;
+        public Vector2[] tex0;
+        public Vector2[] tex1;
+        public Vector2[] tex2;
+        public Vector2[] tex3;
+        public Vector2[] tex4;
+        public Vector2[] tex5;
+        public Vector2[] tex6;
+        public Vector2[] tex7;
         // TODO
         // pos mtx array
         // nrm mtx array
@@ -88,7 +87,7 @@ namespace GameCube.GX
             color.Deserialize(reader);
             clr[i] = color;
         }
-        private void ReadTEX(EndianBinaryReader reader, VertexAttribute va, int i, float2[] tex)
+        private void ReadTEX(EndianBinaryReader reader, VertexAttribute va, int i, Vector2[] tex)
         {
             tex[i] = GXUtility.ReadUV(reader, va.NElements, va.ComponentType, va.NFracBits);
         }
@@ -120,7 +119,7 @@ namespace GameCube.GX
             clr[i].ComponentType = va.ComponentType;
             clr[i].Serialize(writer);
         }
-        private void WriteTEX(EndianBinaryWriter writer, VertexAttribute va, int i, float2[] tex)
+        private void WriteTEX(EndianBinaryWriter writer, VertexAttribute va, int i, Vector2[] tex)
         {
             GXUtility.WriteUV(writer, tex[i], va.NElements, va.ComponentType, va.NFracBits);
         }
@@ -182,20 +181,20 @@ namespace GameCube.GX
 
                 //
                 pn_mtx_idx = hasPNMTXIDX ? new byte[count] : new byte[0];
-                pos = hasPOS ? new float3[count] : new float3[0];
-                nrm = hasNRM || hasNBT ? new float3[count] : new float3[0];
-                bnm = hasNBT ? new float3[count] : new float3[0];
-                tan = hasNBT ? new float3[count] : new float3[0];
+                pos = hasPOS ? new Vector3[count] : new Vector3[0];
+                nrm = hasNRM || hasNBT ? new Vector3[count] : new Vector3[0];
+                bnm = hasNBT ? new Vector3[count] : new Vector3[0];
+                tan = hasNBT ? new Vector3[count] : new Vector3[0];
                 clr0 = hasCLR0 ? new GXColor[count] : new GXColor[0];
                 clr1 = hasCLR1 ? new GXColor[count] : new GXColor[0];
-                tex0 = hasTEX0 ? new float2[count] : new float2[0];
-                tex1 = hasTEX1 ? new float2[count] : new float2[0];
-                tex2 = hasTEX2 ? new float2[count] : new float2[0];
-                tex3 = hasTEX3 ? new float2[count] : new float2[0];
-                tex4 = hasTEX4 ? new float2[count] : new float2[0];
-                tex5 = hasTEX5 ? new float2[count] : new float2[0];
-                tex6 = hasTEX6 ? new float2[count] : new float2[0];
-                tex7 = hasTEX7 ? new float2[count] : new float2[0];
+                tex0 = hasTEX0 ? new Vector2[count] : new Vector2[0];
+                tex1 = hasTEX1 ? new Vector2[count] : new Vector2[0];
+                tex2 = hasTEX2 ? new Vector2[count] : new Vector2[0];
+                tex3 = hasTEX3 ? new Vector2[count] : new Vector2[0];
+                tex4 = hasTEX4 ? new Vector2[count] : new Vector2[0];
+                tex5 = hasTEX5 ? new Vector2[count] : new Vector2[0];
+                tex6 = hasTEX6 ? new Vector2[count] : new Vector2[0];
+                tex7 = hasTEX7 ? new Vector2[count] : new Vector2[0];
 
                 // For each existing component, add a delegate of their function to a list, called in order
                 var deserializeComponents = new List<Action<int>>(32);

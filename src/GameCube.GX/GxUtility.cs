@@ -1,7 +1,7 @@
 ﻿using Manifold.IO;
 using System;
 using System.IO;
-using Unity.Mathematics;
+using System.Numerics;
 
 namespace GameCube.GX
 {
@@ -9,18 +9,18 @@ namespace GameCube.GX
     {
         public const int GX_FIFO_ALIGN = 32;
 
-        public static float3 ReadPos(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static Vector3 ReadPos(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_POS_XYZ)
             {
-                return new float3(
+                return new Vector3(
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs));
             }
             else if (nElements == ComponentCount.GX_POS_XY)
             {
-                return new float3(
+                return new Vector3(
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs),
                     0f);
@@ -30,12 +30,12 @@ namespace GameCube.GX
                 throw new NotImplementedException();
             }
         }
-        public static float3 ReadNormal(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static Vector3 ReadNormal(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             // For NBT, the caller of this function should call it 3 times, each for N, B, and T
             if (nElements == ComponentCount.GX_NRM_XYZ || nElements == ComponentCount.GX_NRM_NBT)
             {
-                return new float3(
+                return new Vector3(
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs));
@@ -45,17 +45,17 @@ namespace GameCube.GX
                 throw new NotImplementedException();
             }
         }
-        public static float2 ReadUV(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static Vector2 ReadUV(EndianBinaryReader reader, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_TEX_ST)
             {
-                return new float2(
+                return new Vector2(
                     ReadNumber(reader, componentType, nFracs),
                     ReadNumber(reader, componentType, nFracs));
             }
             else if (nElements == ComponentCount.GX_TEX_S)
             {
-                return new float2(
+                return new Vector2(
                     ReadNumber(reader, componentType, nFracs),
                     0f);
             }
@@ -107,48 +107,48 @@ namespace GameCube.GX
 
 
 
-        public static void WritePosition(EndianBinaryWriter writer, float3 position, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WritePosition(EndianBinaryWriter writer, Vector3 position, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_POS_XYZ)
             {
-                WriteNumber(writer, position.x, componentType, nFracs);
-                WriteNumber(writer, position.y, componentType, nFracs);
-                WriteNumber(writer, position.z, componentType, nFracs);
+                WriteNumber(writer, position.X, componentType, nFracs);
+                WriteNumber(writer, position.Y, componentType, nFracs);
+                WriteNumber(writer, position.Z, componentType, nFracs);
             }
             else if (nElements == ComponentCount.GX_POS_XY)
             {
-                WriteNumber(writer, position.x, componentType, nFracs);
-                WriteNumber(writer, position.y, componentType, nFracs);
+                WriteNumber(writer, position.X, componentType, nFracs);
+                WriteNumber(writer, position.Y, componentType, nFracs);
             }
             else
             {
                 throw new ArgumentException();
             }
         }
-        public static void WriteNormal(EndianBinaryWriter writer, float3 normal, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WriteNormal(EndianBinaryWriter writer, Vector3 normal, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             // For NBT, the caller of this function should call it 3 times, each for N, B, and T
             if (nElements == ComponentCount.GX_NRM_XYZ || nElements == ComponentCount.GX_NRM_NBT)
             {
-                WriteNumber(writer, normal.x, componentType, nFracs);
-                WriteNumber(writer, normal.y, componentType, nFracs);
-                WriteNumber(writer, normal.z, componentType, nFracs);
+                WriteNumber(writer, normal.X, componentType, nFracs);
+                WriteNumber(writer, normal.Y, componentType, nFracs);
+                WriteNumber(writer, normal.Z, componentType, nFracs);
             }
             else
             {
                 throw new ArgumentException();
             }
         }
-        public static void WriteUV(EndianBinaryWriter writer, float2 textureUV, ComponentCount nElements, ComponentType componentType, int nFracs)
+        public static void WriteUV(EndianBinaryWriter writer, Vector2 textureUV, ComponentCount nElements, ComponentType componentType, int nFracs)
         {
             if (nElements == ComponentCount.GX_TEX_ST)
             {
-                WriteNumber(writer, textureUV.x, componentType, nFracs);
-                WriteNumber(writer, textureUV.y, componentType, nFracs);
+                WriteNumber(writer, textureUV.X, componentType, nFracs);
+                WriteNumber(writer, textureUV.Y, componentType, nFracs);
             }
             else if (nElements == ComponentCount.GX_TEX_S)
             {
-                WriteNumber(writer, textureUV.x, componentType, nFracs);
+                WriteNumber(writer, textureUV.X, componentType, nFracs);
             }
             else
             {
