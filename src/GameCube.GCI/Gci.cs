@@ -1,6 +1,6 @@
 ﻿using GameCube.GX.Texture;
 using Manifold.IO;
-using System.Reflection;
+using System;
 
 namespace GameCube.GCI
 {

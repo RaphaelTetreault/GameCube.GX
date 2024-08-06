@@ -1,4 +1,6 @@
-﻿namespace GameCube.GCI
+﻿using System;
+
+namespace GameCube.GCI
 {
     internal class InvalidGciException : Exception
     {

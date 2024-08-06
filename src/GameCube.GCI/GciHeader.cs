@@ -1,6 +1,7 @@
 ﻿using GameCube.DiskImage;
 using GameCube.GX.Texture;
 using Manifold.IO;
+using System;
 
 namespace GameCube.GCI
 {
