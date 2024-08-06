@@ -36,7 +36,7 @@ namespace GameCube.GX.Texture
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
             var directBlock = block as DirectBlock;
-            int nColors = directBlock.Colors.Length;
+            int nColors = directBlock!.Colors.Length;
             Assert.IsTrue(nColors == BlockWidth * BlockHeight);
             var a = new byte[nColors];
             var r = new byte[nColors];
@@ -50,7 +50,8 @@ namespace GameCube.GX.Texture
                 g[i] = color.g;
                 b[i] = color.b;
             }
-            var bytes = new byte[BlockWidth * BlockHeight];
+            int blockByteCount = BlockWidth * BlockHeight * BytesPerPixel;
+            var bytes = new byte[blockByteCount];
             InterleaveBytes(a, 33, 2, 16, ref bytes);
             InterleaveBytes(r, 32, 2, 16, ref bytes);
             InterleaveBytes(g, 01, 2, 16, ref bytes);
