@@ -18,11 +18,17 @@ namespace GameCube.GX.Texture
         /// <remarks>
         ///     Will return 0 for encodings with less than 8 bits per colour.
         /// </remarks>
-        public int BytesPerPixel => BitsPerColor / 8;
+        public int BytesPerPixel { get; private init; }
 
         public override bool IsDirect => true;
         public override bool IsIndirect => false;
         public override int BytesPerBlock => (int)MathF.Ceiling(BitsPerColor / 8f * BlockWidth * BlockHeight);
+
+        public DirectEncoding()
+        {
+            // Initialize count
+            BytesPerPixel = BitsPerColor / 8;
+        }
 
         new public static DirectEncoding GetEncoding(TextureFormat textureFormat)
         {
