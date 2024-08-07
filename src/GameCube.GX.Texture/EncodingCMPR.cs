@@ -19,12 +19,12 @@ namespace GameCube.GX.Texture
         public override byte BlockHeight => 8;
         public override byte BitsPerColor => 4;
         public override TextureFormat Format => TextureFormat.CMPR;
-        private BcEncoder DXT1Encoder => new BcEncoder();
+        private BcEncoder BC1Encoder => new BcEncoder();
 
         public EncodingCMPR(CompressionQuality quality = CompressionQuality.Balanced) : base()
         {
-            DXT1Encoder.OutputOptions.Quality = quality;
-            DXT1Encoder.OutputOptions.Format = CompressionFormat.Bc1;
+            BC1Encoder.OutputOptions.Quality = quality;
+            BC1Encoder.OutputOptions.Format = CompressionFormat.Bc1;
         }
 
 
@@ -76,7 +76,7 @@ namespace GameCube.GX.Texture
             // Get the 8x8 color block
             var colorBlock = block as DirectBlock;
 
-            // Split this 8x8 block into 4 (2x2) quadrants of 4x4 pixels.
+            // Split this 8x8 block into 4 quadrants (2x2), each 16 pixels (4x4).
             for (int qy = 0; qy < 2; qy++)
             {
                 for (int qx = 0; qx < 2; qx++)
@@ -90,10 +90,11 @@ namespace GameCube.GX.Texture
                         colors32[i].r = colors[i].r;
                         colors32[i].g = colors[i].g;
                         colors32[i].b = colors[i].b;
+                        colors32[i].a = colors[i].a;
                     }
 
                     // Get bytes to write
-                    byte[] rawBytes = DXT1Encoder.EncodeToRawBytes(new ReadOnlyMemory2D<ColorRgba32>(colors32, 4, 4))[0];
+                    byte[] rawBytes = BC1Encoder.EncodeToRawBytes(new ReadOnlyMemory2D<ColorRgba32>(colors32, 4, 4))[0];
                     // Colors byte ordering is OK
                     ushort c0 = BitConverter.ToUInt16([rawBytes[0], rawBytes[1]]);
                     ushort c1 = BitConverter.ToUInt16([rawBytes[2], rawBytes[3]]);
