@@ -1,5 +1,9 @@
 ﻿using Manifold.IO;
 using System;
+using BCnEncoder.Encoder;
+using BCnEncoder.Shared;
+using Microsoft.Toolkit.HighPerformance;
+
 
 namespace GameCube.GX.Texture
 {
@@ -15,6 +19,13 @@ namespace GameCube.GX.Texture
         public override byte BlockHeight => 8;
         public override byte BitsPerColor => 4;
         public override TextureFormat Format => TextureFormat.CMPR;
+        private BcEncoder DXT1Encoder => new BcEncoder();
+
+        public EncodingCMPR(CompressionQuality quality = CompressionQuality.Balanced) : base()
+        {
+            DXT1Encoder.OutputOptions.Quality = quality;
+            DXT1Encoder.OutputOptions.Format = CompressionFormat.Bc1;
+        }
 
 
         public override Block ReadBlock(EndianBinaryReader reader)
@@ -62,6 +73,49 @@ namespace GameCube.GX.Texture
 
         public override void WriteBlock(EndianBinaryWriter writer, Block block)
         {
+            // Get the 8x8 color block
+            var colorBlock = block as DirectBlock;
+
+            // Split this 8x8 block into 4 (2x2) quadrants of 4x4 pixels.
+            for (int qy = 0; qy < 2; qy++)
+            {
+                for (int qx = 0; qx < 2; qx++)
+                {
+                    // Get the 4x4 pixel subset
+                    var colors = Get4x4SubBlockColors(colorBlock!.Colors, qx, qy);
+                    // Convert from own format into that used by BCnEncoder
+                    ColorRgba32[] colors32 = new ColorRgba32[16];
+                    for (int i = 0; i < 16; i++)
+                    {
+                        colors32[i].r = colors[i].r;
+                        colors32[i].g = colors[i].g;
+                        colors32[i].b = colors[i].b;
+                    }
+
+                    // Get bytes to write
+                    byte[] rawBytes = DXT1Encoder.EncodeToRawBytes(new ReadOnlyMemory2D<ColorRgba32>(colors32, 4, 4))[0];
+                    // Colors byte ordering is OK
+                    ushort c0 = BitConverter.ToUInt16([rawBytes[0], rawBytes[1]]);
+                    ushort c1 = BitConverter.ToUInt16([rawBytes[2], rawBytes[3]]);
+                    // But indexes are flipped X and Y
+                    // Flip Y axis
+                    uint indexesByteSwapped = BitConverter.ToUInt32([rawBytes[7], rawBytes[6], rawBytes[5], rawBytes[4]]);
+                    // Flip X axis
+                    uint indexesBitSwapped =
+                        (indexesByteSwapped >> 6) & (0b_00000011_00000011_00000011_00000011) |
+                        (indexesByteSwapped >> 2) & (0b_00001100_00001100_00001100_00001100) |
+                        (indexesByteSwapped << 2) & (0b_00110000_00110000_00110000_00110000) |
+                        (indexesByteSwapped << 6) & (0b_11000000_11000000_11000000_11000000);
+                    // Finally, write out DXT1 block
+                    writer.Write(c0);
+                    writer.Write(c1);
+                    writer.Write(indexesBitSwapped);
+                }
+            }
+        }
+
+        public void OldWriteBlock(EndianBinaryWriter writer, Block block)
+        {
             var colorBlock = block as DirectBlock;
 
             // CMPR 8x8 is split into 2x2 quadrants of 4x4 pixels
@@ -70,9 +124,9 @@ namespace GameCube.GX.Texture
                 for (int qx = 0; qx < 2; qx++)
                 {
                     // Get colors
-                    var colors4x4 = new TextureColor[4*4];
+                    var colors4x4 = new TextureColor[4 * 4];
                     // The following math gets the first pixel index for the quadrant.
-                    int quadrantBaseIndex = qx * 4 + qy * 32 ;
+                    int quadrantBaseIndex = qx * 4 + qy * 32;
                     for (int y = 0; y < 4; y++)
                     {
                         for (int x = 0; x < 4; x++)
@@ -109,12 +163,12 @@ namespace GameCube.GX.Texture
             colors[1] = TextureColor.FromRGB565(c1);
             if (c0 > c1)
             {
-                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f/3f);
-                colors[3] = TextureColor.Lerp(colors[0], colors[1], 2f/3f);
+                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f / 3f);
+                colors[3] = TextureColor.Lerp(colors[0], colors[1], 2f / 3f);
             }
             else
             {
-                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f/2f);
+                colors[2] = TextureColor.Lerp(colors[0], colors[1], 1f / 2f);
                 colors[3] = new TextureColor(0x00000000);
             }
             return colors;
@@ -142,7 +196,7 @@ namespace GameCube.GX.Texture
         /// </returns>
         public static byte[] UnpackIndexes(uint indexesPacked)
         {
-            byte[] indexes = new byte[4*4];
+            byte[] indexes = new byte[4 * 4];
             for (int i = 0; i < indexes.Length; i++)
             {
                 // left-most bits are index0, right-most bits are index15
@@ -164,7 +218,7 @@ namespace GameCube.GX.Texture
         /// </exception>
         public static uint PackIndexes(byte[] indexes)
         {
-            bool isValidQuantity = indexes.Length == 4*4; // 16
+            bool isValidQuantity = indexes.Length == 4 * 4; // 16
             if (!isValidQuantity)
             {
                 string msg = $"Argument {nameof(indexes)}.Length is not exatly 16.";
