@@ -130,7 +130,7 @@ namespace GameCube.GX.Texture
         public static void GetCmprColorAndIndexes(TextureColor[] colors4x4, out ushort c0, out ushort c1, out uint indexesPacked)
         {
             // For now use naive range-fit for CMPR
-            DXT1.RangeFitColors(colors4x4, out c0, out c1, out indexesPacked);
+            DXT1.MinMaxFitColors(colors4x4, out c0, out c1, out indexesPacked);
         }
 
         /// <summary>
@@ -181,6 +181,31 @@ namespace GameCube.GX.Texture
             }
 
             return packedIndexes;
+        }
+
+        public TextureColor[] Get4x4SubBlockColors(TextureColor[] colors, int qx, int qy)
+        {
+            // DXT1 sub-block is 4x4 inside the larger 8x8
+            TextureColor[] subBlock = new TextureColor[16];
+
+            // Compute starts and ends
+            int yStart = qy * 4;
+            int yEnd = yStart + 4;
+            int xStart = qx * 4;
+            int xEnd = xStart + 4;
+
+            // Iterate over 8x8 array, copying out 4x4 pixel quadrant
+            int blockIndex4x4 = 0;
+            for (int y = yStart; y < yEnd; y++)
+            {
+                for (int x = xStart; x < xEnd; x++)
+                {
+                    int blockIndex8x8 = x + (y * 8);
+                    subBlock[blockIndex4x4++] = colors[blockIndex8x8];
+                }
+            }
+
+            return subBlock;
         }
 
     }

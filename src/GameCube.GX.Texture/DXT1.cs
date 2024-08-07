@@ -15,7 +15,7 @@ namespace GameCube.GX.Texture
     /// </summary>
     public static class DXT1
     {
-        public static void RangeFitColors(in TextureColor[] pixelsBlock4x4, out ushort c0, out ushort c1, out uint packedIndexes)
+        public static void MinMaxFitColors(in TextureColor[] pixelsBlock4x4, out ushort c0, out ushort c1, out uint packedIndexes)
         {
             bool isValid4x4Block = pixelsBlock4x4.Length == 4 * 4;
             if (!isValid4x4Block)
