@@ -11,7 +11,7 @@
         InvalidBanner = IndirectColorCI8 | DirectColorRGB5A3,
 
         // Animation flags
-        // Unset is loop, set it ping-pong (AKA seesaw)
+        // Unset is loop, set is ping-pong (AKA seesaw)
         AnimationLoop     = 0 << 2,
         AnimationPingPong = 1 << 2,
     }

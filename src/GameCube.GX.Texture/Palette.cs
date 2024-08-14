@@ -1,7 +1,14 @@
 ﻿using Manifold.IO;
 using System;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Reflection.PortableExecutable;
+
+// TODO: implement own quantization
+// https://en.wikipedia.org/wiki/Median_cut
+// https://en.wikipedia.org/wiki/K-means_clustering
+// And consider where dithering fits in?
+// https://en.wikipedia.org/wiki/Dither
+// https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
+// https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html
 
 namespace GameCube.GX.Texture
 {

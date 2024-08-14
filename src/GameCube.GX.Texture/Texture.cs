@@ -167,7 +167,7 @@ namespace GameCube.GX.Texture
         public static void CreateIndirectColorBlocksAndPaletteFromTexture(Texture texture, TextureFormat indirectFormat, out IndirectBlock[] blocks, TextureFormat paletteFormat, out Palette palette)
         {
             IndirectEncoding encoding = IndirectEncoding.GetEncoding(indirectFormat);
-            blocks = Texture.CreateIndirectColorBlocksAndPaletteFromTexture(texture, encoding, paletteFormat, out palette, out _, out _);
+            blocks = CreateIndirectColorBlocksAndPaletteFromTexture(texture, encoding, paletteFormat, out palette, out _, out _);
         }
 
 
@@ -609,14 +609,12 @@ namespace GameCube.GX.Texture
             Texture texture = FromIndirectBlocksAndPalette(blocks, blocksWidth, blocksHeight, palette);
             return texture;
         }
-
         public static void WriteDirectColorTexture(EndianBinaryWriter writer, Texture texture, TextureFormat directFormat)
         {
             DirectEncoding encoding = DirectEncoding.GetEncoding(directFormat);
             DirectBlock[] blocks = CreateDirectColorBlocksFromTexture(texture, encoding);
             encoding.WriteBlocks(writer, blocks);
         }
-
         public static void WriteIndirectColorTexture(EndianBinaryWriter writer, Texture texture, TextureFormat indirectFormat, TextureFormat paletteFormat)
         {
             IndirectEncoding encoding = IndirectEncoding.GetEncoding(indirectFormat);
@@ -624,6 +622,5 @@ namespace GameCube.GX.Texture
             palette.WritePalette(writer, encoding);
             encoding.WriteBlocks(writer, blocks);
         }
-
     }
 }
