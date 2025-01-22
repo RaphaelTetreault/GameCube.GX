@@ -622,5 +622,28 @@ namespace GameCube.GX.Texture
             palette.WritePalette(writer, encoding);
             encoding.WriteBlocks(writer, blocks);
         }
+    
+    
+        /// <summary>
+        ///     Compute the max number of mipmaps this a texture of size
+        ///     <paramref name="width"/> and <paramref name="height"/>
+        ///     would have.
+        /// </summary>
+        /// <param name="width">Texture width in pixels.</param>
+        /// <param name="height">Texture height in pixels.</param>
+        /// <returns>
+        ///     Max number of valid mipmaps for the specified size.
+        /// </returns>
+        public static ushort GetMaxMipmapCount(int width, int height)
+        {
+            ushort mipmapCount = 0;
+            while (width > 1 && height > 1)
+            {
+                width >>= 1;
+                height >>= 1;
+                mipmapCount++;
+            }
+            return mipmapCount;
+        }
     }
 }
